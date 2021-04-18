@@ -10,8 +10,9 @@ import CoreData
 
 extension Folder {
     
-    static func getCurrentFolder() -> Folder {
-        if let folder = Folder.fetchFolder(id: UserDefaultManager.shared.currentFolderId) {
+    static func getCurrentFolder() -> Folder? {
+        guard let id = UserDefaultManager.shared.currentFolderId else { return nil }
+        if let folder = Folder.fetchFolder(id: id) {
             return folder
         }else if let folder = Folder.fetchFolder(name: "General") {
             return folder

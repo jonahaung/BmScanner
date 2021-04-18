@@ -6,18 +6,19 @@
 //
 
 import UIKit
-import MessageUI
 import StoreKit
 
-final class SettingManager: NSObject {
+final class SettingManager: ObservableObject {
     
-    static let shared = SettingManager()
-    
+    enum SheetType: Identifiable {
+        var id: SheetType { return self }
+        case eulaView, onboardingView, mailCompose, activityView, instructionsView, folderPicker
+    }
+    @Published var sheetType: SheetType?
+    @Published var currentFolderName = Folder.getCurrentFolder()?.name ?? "General Folder"
+
     func gotoPrivacyPolicy() {
-        guard let url = URL(string: "https://photosms-1bc29.web.app") else {
-            return //be safe
-        }
-        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        UIApplication.shared.open(AppInfo.privacyURL, options: [:], completionHandler: nil)
     }
     
     func rateApp() {

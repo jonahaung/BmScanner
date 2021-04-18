@@ -32,14 +32,14 @@ final class TextEditorManger: ObservableObject {
             objectWillChange.send()
         }
     }
-    var font: UIFont {
+    private var font: UIFont {
         get {
             return textView.font!
         }
         set {
-            textView.font = newValue
-            updateHistory()
-            objectWillChange.send()
+            let mutableAttributedText = NSMutableAttributedString(attributedString: self.attributedText)
+            mutableAttributedText.addAttribute(.font, value: newValue, range: NSRange(location: 0, length: mutableAttributedText.length))
+            self.attributedText = mutableAttributedText
         }
     }
     
@@ -65,31 +65,30 @@ final class TextEditorManger: ObservableObject {
     }
     
     
-//    func adjustFont() {
-//        text = originalText
-////        let maxWidth = textView.contentSize.width - (textView.textContainerInset.left + textView.textContainerInset.right + textView.textContainer.lineFragmentPadding + 10)
-//        let maxWidth = UIScreen.main.bounds.size.width - 45
-//        let lines = textView.text.lines()
-//        guard lines.count > 1 else { return }
-//        if let longest = (lines.sorted{$0.count > $1.count }).first {
-//            let height = CGFloat(30)
-//            var fontSize = height
-//            var textSize: CGSize {
-//                return longest.boundingRect(with: CGSize(width: .infinity, height: height), options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [.font: font.withSize(fontSize)], context: nil).size
-//            }
-//
-//            repeat {
-//                fontSize -= 0.5
-//            } while textSize.width >= maxWidth
-//            self.fontSize = max(8, min(30, fontSize))
-//        }
-//    }
+    //    func adjustFont() {
+    //        text = originalText
+    ////        let maxWidth = textView.contentSize.width - (textView.textContainerInset.left + textView.textContainerInset.right + textView.textContainer.lineFragmentPadding + 10)
+    //        let maxWidth = UIScreen.main.bounds.size.width - 45
+    //        let lines = textView.text.lines()
+    //        guard lines.count > 1 else { return }
+    //        if let longest = (lines.sorted{$0.count > $1.count }).first {
+    //            let height = CGFloat(30)
+    //            var fontSize = height
+    //            var textSize: CGSize {
+    //                return longest.boundingRect(with: CGSize(width: .infinity, height: height), options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [.font: font.withSize(fontSize)], context: nil).size
+    //            }
+    //
+    //            repeat {
+    //                fontSize -= 0.5
+    //            } while textSize.width >= maxWidth
+    //            self.fontSize = max(8, min(30, fontSize))
+    //        }
+    //    }
 }
 // History
 extension TextEditorManger {
     
     private func updateHistory() {
-       
         if !history.contains(attributedText) && attributedText != originalText {
             SoundManager.vibrate(vibration: .soft)
             history.append(attributedText)
@@ -112,9 +111,13 @@ extension TextEditorManger {
         fontSize += 0.5
     }
     
-    func selectAllTexts() {
-        textView.becomeFirstResponder()
-        textView.selectedTextRange = textView.textRange(from: textView.beginningOfDocument, to: textView.endOfDocument)
+    func toggleSelectAllTexts() {
+        if textView.isFirstResponder {
+            textView.resignFirstResponder()
+        } else {
+            textView.becomeFirstResponder()
+            textView.selectedTextRange = textView.textRange(from: textView.beginningOfDocument, to: textView.endOfDocument)
+        }
     }
 }
 
@@ -128,9 +131,9 @@ extension TextEditorManger {
         // A4 size
         let pageSize = CGSize(width: 595.2, height: 841.8)
         let pageMargins = UIEdgeInsets(top: 72, left: 72, bottom: 72, right: 72)
-//        let ratio = 841.8 / 595.2
-//        let pageSize = CGSize(width: textView.frame.size.width, height: textView.frame.size.width * CGFloat(ratio))
-//        let pageMargins = textView.textContainerInset
+        //        let ratio = 841.8 / 595.2
+        //        let pageSize = CGSize(width: textView.frame.size.width, height: textView.frame.size.width * CGFloat(ratio))
+        //        let pageMargins = textView.textContainerInset
         
         // calculate the printable rect from the above two
         let printableRect = CGRect(x: pageMargins.left, y: pageMargins.top, width: pageSize.width - pageMargins.left - pageMargins.right, height: pageSize.height - pageMargins.top - pageMargins.bottom)
@@ -166,6 +169,6 @@ extension TextEditorManger: AutoCompleteTextViewDelegate {
         isEditing = false
     }
     func textView(layoutSubViews textView: AutoCompleteTextView) {
-       
+        
     }
 }

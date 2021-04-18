@@ -33,6 +33,16 @@ final class AutoCompleteTextView: UITextView {
         $0.maxConcurrentOperationCount = 1
         return $0
     }(OperationQueue())
+    
+    override var attributedText: NSAttributedString!{
+        didSet {
+            let attributes = attributedText.attributes(at: attributedText.length - 1, effectiveRange: nil)
+            typingAttributes = attributes
+            suggestedTextAttributes = attributes
+            suggestedTextAttributes.updateValue(UIColor.tertiaryLabel, forKey: .foregroundColor)
+        }
+    }
+    
     override var font: UIFont? {
         didSet {
             guard let font = self.font else { return }

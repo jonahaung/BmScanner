@@ -14,19 +14,17 @@ extension Note {
     static var allFetchRequest: NSFetchRequest<Note> {
         let request: NSFetchRequest<Note> = Note.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "edited", ascending: false)]
-        request.predicate = NSPredicate(format: "state == 0")
         return request
     }
-    static var deletedFetchRequest: NSFetchRequest<Note> {
+    static var generalFetchRequest: NSFetchRequest<Note> {
         let request: NSFetchRequest<Note> = Note.fetchRequest()
+        request.predicate = NSPredicate(format: "folder == NULL")
         request.sortDescriptors = [NSSortDescriptor(key: "edited", ascending: false)]
-        request.predicate = NSPredicate(format: "state == 1")
         return request
     }
     static var homeViewFetchRequest: NSFetchRequest<Note> {
         let request: NSFetchRequest<Note> = Note.fetchRequest()
         request.fetchLimit = 8
-        request.predicate = NSPredicate(format: "state == 0")
         request.sortDescriptors = [NSSortDescriptor(key: "edited", ascending: false)]
         return request
     }
@@ -34,7 +32,7 @@ extension Note {
     static func fetchRequest(for folder: Folder) -> NSFetchRequest<Note>{
         let request: NSFetchRequest<Note> = Note.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "edited", ascending: false)]
-        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [NSPredicate(format: "state == 0"), NSPredicate(format: "folder == %@", folder)])
+        request.predicate = NSPredicate(format: "folder == %@", folder)
         return request
     }
     
@@ -64,5 +62,12 @@ extension Note {
     static func delete(note: Note) {
         PersistenceController.shared.container.viewContext.delete(note)
         
+    }
+}
+
+extension NSManagedObject {
+    func delete() {
+        PersistenceController.shared.container.viewContext.delete(self)
+        PersistenceController.shared.save()
     }
 }

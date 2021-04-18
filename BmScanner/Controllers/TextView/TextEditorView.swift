@@ -43,18 +43,13 @@ extension TextEditorView {
 
 // SubViews
 extension TextEditorView {
-    
-    private var toolBar: some ToolbarContent {
-        return ToolbarItemGroup(placement: .bottomBar) {
-            
-        }
-    }
+
     private var navBarTrailing: some View {
         return HStack {
             Button(action: {
                 viewManager.sheetType = .InfoSheet
             }, label: {
-                Image(systemName: "info")
+                Image(systemName: "info").padding()
             })
             
             Button(action: {
@@ -62,7 +57,7 @@ extension TextEditorView {
             }, label: {
                 Image(systemName: "square.and.arrow.up")
             })
-        }.padding()
+        }
     }
     private var navBarLeading: some View {
         return HStack {
@@ -91,8 +86,7 @@ extension TextEditorView {
             }).disabled(!manager.wrappedValue.hasHistory)
             
             Button(action: {
-                manager.wrappedValue.selectAllTexts()
-                UIPasteboard.general.string = manager.wrappedValue.attributedText.string
+                manager.wrappedValue.toggleSelectAllTexts()
             }, label: {
                 Image(systemName: "square.on.square").padding()
             })
@@ -136,6 +130,10 @@ extension TextEditorView {
                 }
             case .PDFViewer:
                 PDFViewerView(data: manager.wrappedValue.convertToPDF())
+            case .FolderPicker:
+                FolderPicker { folder in
+                    note.folder = folder
+                }
             }
         }
         
@@ -176,7 +174,7 @@ extension TextEditorView {
     }
     private func fontSheet() -> ActionSheet {
         return ActionSheet(
-            title: Text("Font Menu"),
+            title: Text("Font Design"),
             buttons: [
                 .default(Text("Regular"), action: {
                     manager.wrappedValue.currentFont = .Regular
@@ -186,7 +184,7 @@ extension TextEditorView {
                     manager.wrappedValue.currentFont = .Bold
                 }),
                 .default(Text("Light"), action: {
-                    
+            
                     manager.wrappedValue.currentFont = .Light
                 }),
                 .cancel()
@@ -198,9 +196,16 @@ extension TextEditorView {
         return ActionSheet(
             title: Text("Info"),
             buttons: [
+                .default(Text("Change Folder"), action: {
+                    viewManager.fullScreenType = .FolderPicker
+                }),
                 .default(Text("Copy Text"), action: {
-                    manager.wrappedValue.selectAllTexts()
+                    manager.wrappedValue.toggleSelectAllTexts()
                     UIPasteboard.general.string = manager.wrappedValue.attributedText.string
+                }),
+                .destructive(Text("Delete this Note"), action: {
+                    note.delete()
+                    presentationMode.wrappedValue.dismiss()
                 }),
                 .cancel()
             ]

@@ -1,15 +1,15 @@
 //
-//  AllNotesView.swift
+//  GeneralNotesView.swift
 //  BmScanner
 //
-//  Created by Aung Ko Min on 17/4/21.
+//  Created by Aung Ko Min on 18/4/21.
 //
 
 import SwiftUI
 
-struct AllNotesView: View {
+struct GeneralNotesView: View {
     
-    @FetchRequest(fetchRequest: Note.allFetchRequest)
+    @FetchRequest(fetchRequest: Note.generalFetchRequest)
     private var notes: FetchedResults<Note>
     
     var body: some View {
@@ -22,7 +22,7 @@ struct AllNotesView: View {
             }
         }
         .listStyle(InsetGroupedListStyle())
-        .navigationTitle("All Notes")
+        .navigationTitle("General Notes")
         .navigationBarItems(trailing: EditButton())
     }
     

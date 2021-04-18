@@ -40,7 +40,7 @@ struct FolderView: View {
         offsets.forEach { i in
             let object = notes[i]
             notes.remove(at: i)
-            object.state = 1
+            object.delete()
         }
     }
 }

@@ -16,7 +16,7 @@ class TextEditorViewViewManager: ObservableObject {
     
     enum FullScreenType: Identifiable {
         var id: FullScreenType { return self }
-        case ShareAttributedText, ShareAsPDF, PDFViewer
+        case ShareAttributedText, ShareAsPDF, PDFViewer, FolderPicker
     }
 
     @Published var sheetType: ActionSheetType?

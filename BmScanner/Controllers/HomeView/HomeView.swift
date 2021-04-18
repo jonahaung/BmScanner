@@ -44,7 +44,8 @@ struct HomeView: View {
                     Button {
                         actionSheetType = .ScannerMenu
                     } label: {
-                        Image(systemName: "plus").modifier(RoundedButton())
+                        Image(systemName: "plus")
+                            .modifier(RoundedButton())
                     }
                     .actionSheet(item: $actionSheetType, content: getActionSheet(_:))
                 }
@@ -116,7 +117,7 @@ extension HomeView {
     
     private func onDisappearOCR() {
         guard manager.note != nil else { return }
-    
+        
         fullScreenType = .TextEditor
     }
     private func onPickedImage(_ image: UIImage) {

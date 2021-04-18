@@ -45,6 +45,8 @@
 		47291498262279BD00F0D545 /* DocPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47291497262279BD00F0D545 /* DocPickerView.swift */; };
 		4729149D26227A9400F0D545 /* DocumentScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4729149C26227A9400F0D545 /* DocumentScannerView.swift */; };
 		472914A52622801B00F0D545 /* Home_Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472914A42622801B00F0D545 /* Home_Manager.swift */; };
+		472BA5D1262BB47100E2B794 /* GeneralNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472BA5D0262BB47100E2B794 /* GeneralNotesView.swift */; };
+		472BA5D6262BB6A000E2B794 /* FolderPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472BA5D5262BB6A000E2B794 /* FolderPicker.swift */; };
 		473634E82624994600697679 /* TextEditorViewViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473634E72624994600697679 /* TextEditorViewViewManager.swift */; };
 		473634ED2624AE5100697679 /* AutoCompleteTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473634EC2624AE5100697679 /* AutoCompleteTextView.swift */; };
 		473634FB2624AFE600697679 /* Ext+UITextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473634FA2624AFE600697679 /* Ext+UITextView.swift */; };
@@ -157,6 +159,8 @@
 		47291497262279BD00F0D545 /* DocPickerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocPickerView.swift; sourceTree = "<group>"; };
 		4729149C26227A9400F0D545 /* DocumentScannerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
 		472914A42622801B00F0D545 /* Home_Manager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home_Manager.swift; sourceTree = "<group>"; };
+		472BA5D0262BB47100E2B794 /* GeneralNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralNotesView.swift; sourceTree = "<group>"; };
+		472BA5D5262BB6A000E2B794 /* FolderPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPicker.swift; sourceTree = "<group>"; };
 		473634E72624994600697679 /* TextEditorViewViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEditorViewViewManager.swift; sourceTree = "<group>"; };
 		473634EC2624AE5100697679 /* AutoCompleteTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoCompleteTextView.swift; sourceTree = "<group>"; };
 		473634FA2624AFE600697679 /* Ext+UITextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Ext+UITextView.swift"; sourceTree = "<group>"; };
@@ -357,6 +361,7 @@
 				472914532622752600F0D545 /* ActivityView.swift */,
 				472914542622752600F0D545 /* MailComposeView.swift */,
 				47E3F4A126297CA500056668 /* PDFViewer */,
+				472BA5D5262BB6A000E2B794 /* FolderPicker.swift */,
 			);
 			path = Pickers;
 			sourceTree = "<group>";
@@ -520,6 +525,7 @@
 				475AC783262A2FF2002F00EF /* Home_RecentFoldersView.swift */,
 				475AC798262A338E002F00EF /* Home_RecentNotesView.swift */,
 				472156B6262A947F00711F7F /* AllNotesView.swift */,
+				472BA5D0262BB47100E2B794 /* GeneralNotesView.swift */,
 			);
 			path = SubViews;
 			sourceTree = "<group>";
@@ -804,11 +810,13 @@
 				47E3F49826296DE500056668 /* MyPDFView.swift in Sources */,
 				47A535C826237026000DAFDB /* CIImage+Utils.swift in Sources */,
 				472914792622752700F0D545 /* EULAView.swift in Sources */,
+				472BA5D1262BB47100E2B794 /* GeneralNotesView.swift in Sources */,
 				472914832622752700F0D545 /* AppTintColor.swift in Sources */,
 				472914732622752600F0D545 /* SoundManager.swift in Sources */,
 				477D67B62622983E00EDB2EB /* EditScanCornerView.swift in Sources */,
 				47E3F49D26297A7800056668 /* PDFViewerView.swift in Sources */,
 				4729147C2622752700F0D545 /* SettingCell.swift in Sources */,
+				472BA5D6262BB6A000E2B794 /* FolderPicker.swift in Sources */,
 				472156C9262A9CC900711F7F /* CoreDataContextObserver.swift in Sources */,
 				475AC789262A301D002F00EF /* FolderCell.swift in Sources */,
 				472914812622752700F0D545 /* Extensions.swift in Sources */,

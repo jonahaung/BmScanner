@@ -79,9 +79,9 @@ final class UserDefaultManager {
         }
     }
     
-    var currentFolderId: String {
+    var currentFolderId: String? {
         get {
-            return manager.string(forKey: _currentFolderId) ?? ""
+            return manager.string(forKey: _currentFolderId)
         }
         set {
             manager.setValue(newValue, forKey: _currentFolderId)

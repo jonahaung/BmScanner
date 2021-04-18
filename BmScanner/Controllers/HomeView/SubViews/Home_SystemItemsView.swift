@@ -17,16 +17,11 @@ struct Home_SystemItemsView: View {
             NavigationLink(destination: AllNotesView()) {
                 cell(text: "All Notes", count: manager.allNotesCount)
             }
-            
+            NavigationLink(destination: GeneralNotesView()) {
+                cell(text: "General Notes", count: manager.generalNotesCount)
+            }
             NavigationLink(destination: FoldersView()) {
                 cell(text: "All Folders", count: manager.allFoldersCount)
-            }
-            NavigationLink(destination: Text("General")) {
-                cell(text: "General Folder", count: manager.generalNotesCount)
-            }
-            NavigationLink(destination: Text("Recently Deleted")) {
-                cell(text: "Recently Deleted", count: manager.deletedNotesCount)
-                
             }
         }
     }
@@ -34,9 +29,11 @@ struct Home_SystemItemsView: View {
     private func cell(text: String, count: Int) -> some View {
         return HStack {
             Text(text)
+                .fontWeight(.medium)
             Spacer()
             if count > 0 {
                 Text(count.description)
+                    .fontWeight(.light)
                     .foregroundColor(Color(.tertiaryLabel))
             }
             
@@ -67,7 +64,6 @@ private class Home_SystemItemsManager: ObservableObject {
         fetchAllNotesCount()
         fetchAllFoldersCount()
         fetchGeneralNotesCount()
-        fetchDeletedNotesCount()
     }
     
     private func fetchAllNotesCount() {
@@ -95,17 +91,6 @@ private class Home_SystemItemsManager: ObservableObject {
             print(error.localizedDescription)
         }
     }
-    
-    private func fetchDeletedNotesCount() {
-        let request: NSFetchRequest<Note> = Note.fetchRequest()
-        request.predicate = NSPredicate(format: "state == 1")
-        do {
-            deletedNotesCount = try context.count(for: request)
-        } catch {
-            print(error.localizedDescription)
-        }
-    }
-    
     
     private func observeNotification() {
         observer = CoreDataContextObserver(context: context)

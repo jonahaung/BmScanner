@@ -25,7 +25,7 @@ struct Home_RecentNotesView: View {
             if bool {
                 offsets.forEach { i in
                     let object = notes[i]
-                    object.state = 1
+                    object.delete()
                 }
             }
         }

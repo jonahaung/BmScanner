@@ -9,22 +9,36 @@ import SwiftUI
 
 struct SettingsView: View {
     
-    private enum SheetType: Identifiable {
-        var id: SheetType { return self }
-        case eulaView, onboardingView, mailCompose, activityView, instructionsView
-    }
+    
     
     @AppStorage(UserDefaultManager.shared._hasShownOnboarding) private var hasShownOnboarding: Bool = UserDefaultManager.shared.hasShownOnboarding
-    @State private var sheetType: SheetType?
+    
     
     @AppStorage(UserDefaultManager.shared._appFontDesign) private var appFontDesignIndex: Int = UserDefaultManager.shared.appFontDesign.rawValue
     @AppStorage(UserDefaultManager.shared._appFontSize) private var appFontSize: Double = UserDefaultManager.shared.appFontSize
     
     @AppStorage(UserDefaultManager.shared._appTintColor) private var appTintColorIndex: Int = UserDefaultManager.shared.appTintColor.rawValue
     @AppStorage(UserDefaultManager.shared._languageMode) private var languageModeIndex: Int = UserDefaultManager.shared.lanaguageMode.rawValue
+
+    @StateObject private var manager = SettingManager()
     
+
     var body: some View {
         Form {
+            Section(header: Text("App").foregroundColor(Color(.tertiaryLabel))) {
+                Button {
+                    manager.sheetType = .folderPicker
+                } label: {
+                    SettingCell(text: "Default Folder", subtitle: manager.currentFolderName, imageName: "folder")
+                }
+                Picker(selection: $languageModeIndex, label: Text("Language")) {
+                    ForEach(LanguageMode.allCases) {
+                        Label($0.description, systemImage: "circlebadge")
+                            .tag($0.rawValue)
+                    }
+                }
+            }
+            
             Section(header: Text("Device Settings").foregroundColor(Color(.tertiaryLabel))) {
                 
                 Picker(selection: $appFontDesignIndex, label: Text("Font Design")) {
@@ -47,12 +61,7 @@ struct SettingsView: View {
                             .foregroundColor($0.color)
                     }
                 }
-                Picker(selection: $languageModeIndex, label: Text("Language")) {
-                    ForEach(LanguageMode.allCases) {
-                        Label($0.description, systemImage: "circlebadge")
-                            .tag($0.rawValue)
-                    }
-                }
+                
                 Button(action: {
                     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
                 }) {
@@ -64,22 +73,22 @@ struct SettingsView: View {
                 SettingCell(text: "App Version", subtitle: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, imageName: "app.badge")
                     .foregroundColor(.secondary)
                 Button(action: {
-                    sheetType = .onboardingView
+                    manager.sheetType = .onboardingView
                 }) {
                     SettingCell(text: "App Walkthrough", subtitle: nil, imageName: "greetingcard")
                 }
                 Button(action: {
-                    sheetType = .instructionsView
+                    manager.sheetType = .instructionsView
                 }) {
                     SettingCell(text: "Guide", subtitle: "video", imageName: "megaphone")
                 }
                 Button(action: {
-                    sheetType = .eulaView
+                    manager.sheetType = .eulaView
                 }) {
                     SettingCell(text: "User License Agreement", subtitle: nil, imageName: "scroll")
                 }
                 Button(action: {
-                    SettingManager.shared.gotoPrivacyPolicy()
+                    manager.gotoPrivacyPolicy()
                 }) {
                     SettingCell(text: "Privacy Policy Website", subtitle: nil, imageName: "exclamationmark.shield")
                 }
@@ -88,12 +97,12 @@ struct SettingsView: View {
             Section(header: Text("App Informations").foregroundColor(Color(.tertiaryLabel))) {
                 
                 Button(action: {
-                    sheetType = .activityView
+                    manager.sheetType = .activityView
                 }) {
                     SettingCell(text: "Share App", subtitle: nil, imageName: "app.gift")
                 }
                 Button(action: {
-                    SettingManager.shared.rateApp()
+                    manager.rateApp()
                 }) {
                     SettingCell(text: "Rate on AppStore", subtitle: nil, imageName: "line.horizontal.star.fill.line.horizontal")
                 }
@@ -101,7 +110,7 @@ struct SettingsView: View {
             
             Section(header: Text("Contacts").foregroundColor(Color(.tertiaryLabel)), footer: Text("Aung Ko Min (iOS Developer)\nSingapore\n+65 88585229\njonahaung@gmail.com").foregroundColor(.secondary).padding()) {
                 Button(action: {
-                    sheetType = .mailCompose
+                    manager.sheetType = .mailCompose
                 }) {
                     SettingCell(text: "Contact Us", subtitle: nil, imageName: "mail")
                 }
@@ -109,13 +118,13 @@ struct SettingsView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .navigationTitle("Settings")
-        .sheet(item: $sheetType) { type in getSheet(type) }
+        .sheet(item: $manager.sheetType) { type in getSheet(type) }
     }
 }
 
 extension SettingsView {
     
-    private func getSheet(_ type: SheetType) -> some View {
+    private func getSheet(_ type: SettingManager.SheetType) -> some View {
         return Group {
             switch type {
             case .eulaView:
@@ -125,10 +134,14 @@ extension SettingsView {
             case .mailCompose:
                 MailComposeView()
             case .activityView:
-                let url = URL(string: "https://apps.apple.com/us/app/bmcamera/id1560405807")
-                ActivityView(activityItems: [url!])
+                ActivityView(activityItems: [AppInfo.appURL])
             case .instructionsView:
                 InstructionsView()
+            case .folderPicker:
+                FolderPicker { folder in
+                    UserDefaultManager.shared.currentFolderId = folder?.id
+                    manager.currentFolderName = folder?.name ?? "General Folder"
+                }
             }
         }
     }
