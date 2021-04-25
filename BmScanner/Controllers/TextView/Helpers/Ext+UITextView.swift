@@ -12,12 +12,17 @@ extension UITextView {
     
     func getWordRangeAtPosition(_ point: CGPoint) -> UITextRange? {
         if let textPosition = self.closestPosition(to: point) {
-            return tokenizer.rangeEnclosingPosition(textPosition, with: .word, inDirection: UITextDirection(rawValue: 1))
+            return tokenizer.rangeEnclosingPosition(textPosition, with: .word, inDirection: .init(rawValue: 1))
         }
         return nil 
     }
     
-    
+    func getLineRangeAtPosition(_ point: CGPoint) -> UITextRange? {
+        if let textPosition = self.closestPosition(to: point) {
+            return tokenizer.rangeEnclosingPosition(textPosition, with: .sentence, inDirection: .init(rawValue: 1))
+        }
+        return nil
+    }
     
     func getWordAtPosition(_ point: CGPoint) -> String? {
         if let range = getWordRangeAtPosition(point) {
@@ -32,6 +37,7 @@ extension UITextView {
         }
         return nil
     }
+    
     func scrollToCorrectPosition() {
         if self.isFirstResponder {
             self.scrollRangeToVisible(NSMakeRange(-1, 0)) // Scroll to bottom
@@ -50,7 +56,6 @@ extension UITextView {
 extension UIScrollView{
 
     func scrollToBottom(animated: Bool) {
-
         var offset = contentOffset
         let inset = contentInset
         offset.y = max(-inset.top, contentSize.height - bounds.height + inset.bottom + safeAreaInsets.bottom)
@@ -58,4 +63,9 @@ extension UIScrollView{
         setContentOffset(offset, animated: animated)
     }
     
+}
+
+extension NSAttributedString {
+    var range: NSRange { return NSRange(location: 0, length: length)}
+    var mutable: NSMutableAttributedString { return NSMutableAttributedString(attributedString: self) }
 }

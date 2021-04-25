@@ -18,12 +18,6 @@ struct FolderPicker: View {
     var body: some View {
         NavigationView {
             List {
-//                TextField("Search Folder", text: $searchText) { x in
-//
-//                } onCommit: {
-//
-//                }
-//                .textFieldStyle(RoundedBorderTextFieldStyle())
                 Section {
                     ForEach(folders) { folder in
                         FolderPickerCell(folder: folder).onTapGesture {
@@ -43,7 +37,6 @@ struct FolderPicker: View {
 
                 }
             }
-            .listStyle(InsetGroupedListStyle())
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Foler Picker")
         }

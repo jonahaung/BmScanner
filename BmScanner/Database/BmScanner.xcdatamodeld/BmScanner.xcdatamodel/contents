@@ -13,10 +13,11 @@
         <attribute name="edited" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="isMyanmar" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
         <relationship name="folder" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Folder" inverseName="notes" inverseEntity="Folder"/>
     </entity>
     <elements>
         <element name="Folder" positionX="-63" positionY="-18" width="128" height="104"/>
-        <element name="Note" positionX="-63" positionY="9" width="128" height="119"/>
+        <element name="Note" positionX="-63" positionY="9" width="128" height="134"/>
     </elements>
 </model>

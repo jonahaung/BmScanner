@@ -26,11 +26,11 @@ enum TextEditorFont: CaseIterable, Identifiable {
     func font(for pointSize: CGFloat, isMyanmar: Bool) -> UIFont {
         switch self {
         case .Regular:
-            return isMyanmar ? UIFont(name: "NotoSansMyanmar-Regular", size: pointSize)! : UIFont.preferredFont(forTextStyle: .body)
+            return isMyanmar ? UIFont(name: "NotoSansMyanmar-Regular", size: pointSize)! : UIFont.systemFont(ofSize: UIFontMetrics.default.scaledValue(for: 16), weight: .regular)
         case .Bold:
-            return isMyanmar ? UIFont(name: "NotoSansMyanmar-Bold", size: pointSize)! : UIFont.preferredFont(forTextStyle: .headline)
+            return isMyanmar ? UIFont(name: "NotoSansMyanmar-Bold", size: pointSize)! : UIFont.systemFont(ofSize: UIFontMetrics.default.scaledValue(for: 16), weight: .bold)
         case .Light:
-            return isMyanmar ? UIFont(name: "NotoSansMyanmar-Light", size: pointSize)! : UIFont.preferredFont(forTextStyle: .callout)
+            return isMyanmar ? UIFont(name: "NotoSansMyanmar-Light", size: pointSize)! : UIFont.systemFont(ofSize: UIFontMetrics.default.scaledValue(for: 16), weight: .light)
         }
     }
 }

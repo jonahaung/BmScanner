@@ -10,27 +10,39 @@ import SwiftUI
 struct PDFViewerView: View {
     
     var data: NSMutableData?
+    @Environment(\.presentationMode) private var presentationMode
+    @State private var showActivityView = false
     
     var body: some View {
         NavigationView {
-            VStack {
-                MyPDFView(data: data)
-                bottomBar
-            }
+            MyPDFView(data: data)
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(leading: NavigationItemLeading, trailing: NavigationItemTrailing)
+                .sheet(isPresented: $showActivityView, content: {
+                    if let data = self.data {
+                        ActivityView(activityItems: [data])
+                    }
+                })
         }
     }
     
-    private var bottomBar: some View {
+    private var NavigationItemTrailing: some View {
         return HStack {
             Button {
-                
+                showActivityView.toggle()
             } label: {
                 Image(systemName: "square.and.arrow.up")
             }
-            Spacer()
         }
-        .padding()
+    }
+    private var NavigationItemLeading: some View {
+        return HStack {
+            Button {
+                presentationMode.wrappedValue.dismiss()
+            } label: {
+                Text("Close")
+            }
+        }
     }
 }
 

@@ -7,12 +7,43 @@
 
 import SwiftUI
 
+enum FolderType {
+    case Folder, General, All
+    var description: String {
+        switch self {
+        case .All:
+            return "All Notes"
+        case .General:
+            return "General Notes"
+        default:
+            return ""
+        }
+    }
+}
+
 struct FolderView: View {
     
-    let folder: Folder
+    private let folder: Folder?
+    private let folderType: FolderType
+    private var fetchRequest: FetchRequest<Note>
+    private var notes: FetchedResults<Note> { fetchRequest.wrappedValue }
     
-    @State private var notes: [Note] = []
-    
+    init(folder: Folder?, type: FolderType = .Folder) {
+        self.folder = folder
+        self.folderType = type
+        switch type {
+        case .Folder:
+            if let folder = folder {
+                fetchRequest = FetchRequest(fetchRequest: Note.fetchRequest(for: folder))
+            } else {
+                fetchRequest = FetchRequest(fetchRequest: Note.allFetchRequest)
+            }
+        case .All:
+            fetchRequest = FetchRequest(fetchRequest: Note.allFetchRequest)
+        case .General:
+            fetchRequest = FetchRequest(fetchRequest: Note.generalFetchRequest)
+        }
+    }
     
     var body: some View {
         List {
@@ -23,24 +54,26 @@ struct FolderView: View {
                 .onDelete(perform: onDelete(offsets:))
             }
         }
-        .listStyle(InsetGroupedListStyle())
-        .navigationTitle(folder.name ?? "")
+        .navigationTitle(folder?.name ?? folderType.description)
         .navigationBarItems(trailing: EditButton())
-        .onAppear{
-            let request = Note.fetchRequest(for: folder)
-            do {
-                notes = try PersistenceController.shared.container.viewContext.fetch(request)
-            }catch {
-                print(error.localizedDescription)
-            }
-        }
+        .overlay(scannerButton)
+    }
+    
+    private var scannerButton: some View {
+        return ScannerButton(folder:folder, onGetNote: { note in
+            guard let note = note else { return }
+            note.folder = folder
+        })
     }
     
     private func onDelete(offsets: IndexSet) {
-        offsets.forEach { i in
-            let object = notes[i]
-            notes.remove(at: i)
-            object.delete()
+        AlertPresenter.show(title: "Are you sure you want to delete this note??", message: nil) { bool in
+            if bool {
+                offsets.forEach { i in
+                    let object = notes[i]
+                    object.delete()
+                }
+            }
         }
     }
 }

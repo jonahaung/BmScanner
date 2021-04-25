@@ -21,9 +21,9 @@ struct FoldersView: View {
                 .onDelete(perform: removeRows(at:))
             }
         }
-        .listStyle(InsetGroupedListStyle())
         .navigationTitle("All Folders")
         .navigationBarItems(trailing: EditButton())
+        
     }
     private func removeRows(at offsets: IndexSet) {
         AlertPresenter.show(title: "Are you sure you want to delete this folder?", message: nil) { bool in

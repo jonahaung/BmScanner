@@ -15,7 +15,7 @@ struct MyPDFView: UIViewRepresentable {
     func makeUIView(context: UIViewRepresentableContext<MyPDFView>) -> MyPDFView.UIViewType {
         let pdfView = PDFView()
         pdfView.autoScales = true
-        
+        pdfView.displayDirection = .vertical
         return pdfView
     }
 

@@ -14,10 +14,10 @@ struct Home_SystemItemsView: View {
     
     var body: some View {
         Group {
-            NavigationLink(destination: AllNotesView()) {
+            NavigationLink(destination: FolderView(folder: nil, type: .All)) {
                 cell(text: "All Notes", count: manager.allNotesCount)
             }
-            NavigationLink(destination: GeneralNotesView()) {
+            NavigationLink(destination: FolderView(folder: nil, type: .General)) {
                 cell(text: "General Notes", count: manager.generalNotesCount)
             }
             NavigationLink(destination: FoldersView()) {

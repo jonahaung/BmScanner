@@ -7,15 +7,14 @@
 
 import UIKit
 protocol AutoCompleteTextViewDelegate: class {
-    
-    func textView(layoutSubViews textView: AutoCompleteTextView)
-    func textView(didEndEditing textView: AutoCompleteTextView)
-    func textView(didBeginEditing textView: AutoCompleteTextView)
-    func textView(didChange textView: AutoCompleteTextView)
+    func textViewDidChange(_ textView: AutoCompleteTextView)
+    func textViewDidEndEditing(_ textView: AutoCompleteTextView)
+    func textViewDidBeginEditing(_ textView: AutoCompleteTextView)
+    func textViewDidChangeSelection(_ textView: AutoCompleteTextView)
 }
 final class AutoCompleteTextView: UITextView {
     
-    private var suggestedTextAttributes: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.tertiaryLabel]
+    private var suggestedTextAttributes: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor.quaternaryLabel]
     weak var autocompleteTextViewDelegate: AutoCompleteTextViewDelegate?
     private lazy var wordPredictManager = WordPredictManager()
     
@@ -36,18 +35,17 @@ final class AutoCompleteTextView: UITextView {
     
     override var attributedText: NSAttributedString!{
         didSet {
-            let attributes = attributedText.attributes(at: attributedText.length - 1, effectiveRange: nil)
-            typingAttributes = attributes
-            suggestedTextAttributes = attributes
-            suggestedTextAttributes.updateValue(UIColor.tertiaryLabel, forKey: .foregroundColor)
+            updateTypingAttributes()
+            autocompleteTextViewDelegate?.textViewDidChange(self)
         }
     }
     
-    override var font: UIFont? {
-        didSet {
-            guard let font = self.font else { return }
-            typingAttributes.updateValue(font, forKey: .font)
-            suggestedTextAttributes.updateValue(font, forKey: .font)
+    private func updateTypingAttributes() {
+        let attributes = attributedText.attributes(at: attributedText.length - 1, effectiveRange: nil)
+        suggestedTextAttributes = attributes
+        suggestedTextAttributes.updateValue(UIColor.tertiaryLabel, forKey: .foregroundColor)
+        if let newFont = typingAttributes.filter({ $0.key == .font }).first?.value as? UIFont, self.font != newFont {
+            self.font = newFont
         }
     }
     
@@ -62,7 +60,7 @@ final class AutoCompleteTextView: UITextView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        autocompleteTextViewDelegate?.textView(layoutSubViews: self)
+        
     }
 }
 
@@ -76,65 +74,64 @@ extension AutoCompleteTextView {
             let caretRect = self.caretRect(for: self.endOfDocument)
             
             let size = CGSize(width: rect.width - caretRect.maxX, height: 50)
-            let diff = (caretRect.height - (self.font!).lineHeight) / 2
+            let diff = (caretRect.height - (font!).lineHeight) / 2
             
             let origin = CGPoint(x: caretRect.maxX, y: caretRect.minY + diff)
             suggestedRect = CGRect(origin: origin, size: size)
-        
+            
             suggestedText.draw(in: suggestedRect, withAttributes: suggestedTextAttributes)
         }
     }
 }
 
 extension AutoCompleteTextView {
-
+    
     private func setup() {
+        isEditable = false
         tintColor = .link
-        allowsEditingTextAttributes = true
+        allowsEditingTextAttributes = false
         isSelectable = true
         isScrollEnabled = true
         showsVerticalScrollIndicator = false
-        textContainerInset = UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
-        textContainer.lineFragmentPadding = 0
+        textContainerInset = UIEdgeInsets(top: 20, left: 10, bottom: 120, right: 10)
         showsHorizontalScrollIndicator = false
         keyboardDismissMode = .interactive
         dataDetectorTypes = .all
-    
+        
         let rightGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipeRight(_:)))
         rightGesture.direction = .right
         addGestureRecognizer(rightGesture)
+        //
+        //        let leftGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipeLeft(_:)))
+        //        leftGesture.direction = .left
+        //        addGestureRecognizer(leftGesture)
         
-        let leftGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipeLeft(_:)))
-        leftGesture.direction = .left
-        addGestureRecognizer(leftGesture)
         delegate = self
     }
 }
 
 extension AutoCompleteTextView: UITextViewDelegate {
     
-    func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
-        
-        suggestedText = nil
-        autocompleteTextViewDelegate?.textView(didEndEditing: self)
-        return true
-    }
-    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
-        autocompleteTextViewDelegate?.textView(didBeginEditing: self)
-        return true
-    }
     func textViewDidChange(_ textView: UITextView) {
-        autocompleteTextViewDelegate?.textView(didChange: self)
+        autocompleteTextViewDelegate?.textViewDidChange(self)
     }
+    func textViewDidEndEditing(_ textView: UITextView) {
+        suggestedText = nil
+        autocompleteTextViewDelegate?.textViewDidEndEditing(self)
+    }
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        autocompleteTextViewDelegate?.textViewDidBeginEditing(self)
+    }
+    func textViewDidChangeSelection(_ textView: UITextView) {
+        autocompleteTextViewDelegate?.textViewDidChangeSelection(self)
+    }
+    
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         let subString = (textView.text as NSString).replacingCharacters(in: range, with: text)
-        if text == " " {
-            
-        }else {
+        if text != " " {
             findCompletions(text: subString)
         }
-        
         return true
     }
     
@@ -154,25 +151,10 @@ extension AutoCompleteTextView: UITextViewDelegate {
             }
         }
     }
-    private func findNextWord(text: String) {
-        oprationQueue.cancelAllOperations()
-        oprationQueue.addOperation {[weak self] in
-            guard let `self` = self else { return }
-            
-            let lastWord = text.lastWord.trimmed
-            
-            var suggestingText: String?
-            
-            suggestingText = self.wordPredictManager.pridict(text: lastWord)
-            OperationQueue.main.addOperation {
-                self.suggestedText = suggestingText
-            }
-        }
-    }
- 
 }
 extension AutoCompleteTextView: UIGestureRecognizerDelegate {
     @objc private func swipeRight(_ gesture: UISwipeGestureRecognizer) {
+        guard isEditable else { return }
         gesture.delaysTouchesBegan = true
         if !text.isEmpty {
             
@@ -194,15 +176,19 @@ extension AutoCompleteTextView: UIGestureRecognizerDelegate {
                 gesture.delaysTouchesEnded = true
             }
             ensureCaretToTheEnd()
-            
-            findNextWord(text: text)
         }
     }
-    @objc private func swipeLeft(_ gesture: UISwipeGestureRecognizer) {
-//        (1...text.lastWord.utf16.count).forEach { _ in
-//            deleteBackward()
-//        }
-        findNextWord(text: text)
-        
-    }
+    
+    
+    //    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    //        super.touchesBegan(touches, with: event)
+    //        guard !isEditable else { return }
+    //        if let first = touches.first {
+    //            let position = first.location(in: self)
+    //            let textRange = self.getLineRangeAtPosition(position)
+    //            selectedTextRange = textRange
+    //        }
+    //
+    //    }
+    
 }

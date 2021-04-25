@@ -15,7 +15,7 @@ struct NoteCell: View {
     var body: some View {
         NavigationLink(destination: destination(note: note)) {
             VStack(alignment: .leading){
-                AttributedLabelView(attributedText: attributedText ?? note.attributedText)
+                AttributedLabelView(attributedText: attributedText ?? note.attributedText, numberOfLines: 4)
                 if let folderName = note.folder?.name, let date = note.created {
                     HStack {
                         Label(folderName, systemImage: "folder.fill")
@@ -31,9 +31,8 @@ struct NoteCell: View {
                 
             }
             .padding(.vertical, 7)
-        }.onAppear{
-            attributedText = note.attributedText
         }
+        
     }
     
     private func destination(note: Note) -> some View {

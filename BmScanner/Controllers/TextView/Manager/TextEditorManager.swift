@@ -9,17 +9,35 @@ import UIKit
 
 final class TextEditorManger: ObservableObject {
     
+    private let note: Note
     private var originalText: NSAttributedString
     private var history = [NSAttributedString]()
     var hasHistory: Bool { return !history.isEmpty }
+    
     let textView = AutoCompleteTextView()
-    
-    @Published var isEditing = false
-    
-    var currentFont = TextEditorFont.Regular {
-        didSet {
-            self.font = currentFont.font(for: fontSize, isMyanmar: attributedText.string.language == "my")
+    var isEditable: Bool {
+        get { return textView.isEditable }
+        set {
+            textView.isEditable = newValue
+            objectWillChange.send()
         }
+    }
+    var isEditing: Bool {
+        get { return textView.isFirstResponder }
+        set {
+            if newValue {
+                textView.becomeFirstResponder()
+            } else {
+                textView.resignFirstResponder()
+            }
+        }
+    }
+    var isSelectedAll: Bool {
+        return textView.selectedRange == NSRange(location: 0, length: attributedText.length)
+    }
+
+    var hasSelectedText: Bool {
+        return textView.selectedRange.length > 0
     }
     
     var attributedText: NSAttributedString {
@@ -27,70 +45,32 @@ final class TextEditorManger: ObservableObject {
             return textView.attributedText
         }
         set {
+            guard newValue != attributedText else { return }
             textView.attributedText = newValue
             updateHistory()
-            objectWillChange.send()
-        }
-    }
-    private var font: UIFont {
-        get {
-            return textView.font!
-        }
-        set {
-            let mutableAttributedText = NSMutableAttributedString(attributedString: self.attributedText)
-            mutableAttributedText.addAttribute(.font, value: newValue, range: NSRange(location: 0, length: mutableAttributedText.length))
-            self.attributedText = mutableAttributedText
         }
     }
     
-    var fontSize: CGFloat {
-        get {
-            return font.pointSize
-        }
-        set {
-            font = font.withSize(UIFontMetrics.default.scaledValue(for: newValue))
-        }
-    }
-    private let note: Note
+    
     
     init(note: Note) {
         self.note = note
-        self.originalText = note.attributedText ?? NSAttributedString()
-        self.attributedText = note.attributedText ?? NSAttributedString()
+        self.originalText = (note.attributedText ?? NSAttributedString())
+        self.attributedText = originalText
         textView.autocompleteTextViewDelegate = self
+        
     }
     
     deinit {
         Log("Deinit")
     }
-    
-    
-    //    func adjustFont() {
-    //        text = originalText
-    ////        let maxWidth = textView.contentSize.width - (textView.textContainerInset.left + textView.textContainerInset.right + textView.textContainer.lineFragmentPadding + 10)
-    //        let maxWidth = UIScreen.main.bounds.size.width - 45
-    //        let lines = textView.text.lines()
-    //        guard lines.count > 1 else { return }
-    //        if let longest = (lines.sorted{$0.count > $1.count }).first {
-    //            let height = CGFloat(30)
-    //            var fontSize = height
-    //            var textSize: CGSize {
-    //                return longest.boundingRect(with: CGSize(width: .infinity, height: height), options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: [.font: font.withSize(fontSize)], context: nil).size
-    //            }
-    //
-    //            repeat {
-    //                fontSize -= 0.5
-    //            } while textSize.width >= maxWidth
-    //            self.fontSize = max(8, min(30, fontSize))
-    //        }
-    //    }
 }
 // History
 extension TextEditorManger {
     
     private func updateHistory() {
-        if !history.contains(attributedText) && attributedText != originalText {
-            SoundManager.vibrate(vibration: .soft)
+        SoundManager.vibrate(vibration: .soft)
+        if attributedText != originalText {
             history.append(attributedText)
         }
     }
@@ -101,23 +81,89 @@ extension TextEditorManger {
     }
 }
 
+
 extension TextEditorManger {
-    
+    func updateFont(currentFont: TextEditorFont) {
+       
+        var selectedRange = NSRange(location: 0, length: 0)
+        if !hasSelectedText {
+            selectedRange = NSRange(location: 0, length: attributedText.length)
+        } else {
+            selectedRange = textView.selectedRange
+        }
+        
+        let newText = attributedText.mutable
+        let new = currentFont.font(for: 17, isMyanmar: attributedText.string.language == "my")
+       
+        attributedText.enumerateAttribute(.font, in: textView.selectedRange, options: .longestEffectiveRangeNotRequired) { (value, range, pointer) in
+            if let old = value as? UIFont {
+                newText.addAttributes([.font: new.withSize(old.pointSize)], range: range)
+            }
+        }
+        self.attributedText = newText
+        if selectedRange.length != attributedText.length {
+            textView.selectedRange = selectedRange
+            textView.scrollRangeToVisible(selectedRange)
+        }
+    }
+    private func updateFontSize(diff: CGFloat) {
+        var selectedRange = NSRange(location: 0, length: 0)
+        if !hasSelectedText {
+            selectedRange = NSRange(location: 0, length: attributedText.length)
+        } else {
+            selectedRange = textView.selectedRange
+        }
+        let newText = attributedText.mutable
+        attributedText.enumerateAttribute(.font, in: selectedRange, options: .longestEffectiveRangeNotRequired) { (value, range, pointer) in
+            if let old = value as? UIFont {
+                newText.addAttributes([.font: old.withSize(old.pointSize + diff)], range: range)
+            }
+        }
+        attributedText = newText
+        if selectedRange.length != attributedText.length {
+            textView.selectedRange = selectedRange
+            textView.scrollRangeToVisible(selectedRange)
+        }
+    }
     func downSize() {
-        fontSize -= 0.5
+        updateFontSize(diff: -1)
     }
     
     func upSize() {
-        fontSize += 0.5
+        updateFontSize(diff: 1)
     }
     
-    func toggleSelectAllTexts() {
-        if textView.isFirstResponder {
-            textView.resignFirstResponder()
+    func highlight() {
+        var selectedRange = NSRange(location: 0, length: 0)
+        if !hasSelectedText {
+            selectedRange = NSRange(location: 0, length: attributedText.length)
         } else {
-            textView.becomeFirstResponder()
-            textView.selectedTextRange = textView.textRange(from: textView.beginningOfDocument, to: textView.endOfDocument)
+            selectedRange = textView.selectedRange
         }
+        let newText = attributedText.mutable
+        
+        
+        attributedText.enumerateAttribute(.backgroundColor, in: selectedRange, options: .longestEffectiveRangeNotRequired) { (value, range, pointer) in
+            if value == nil {
+                newText.addAttributes([.backgroundColor: UIColor.systemYellow.withAlphaComponent(0.6)], range: range)
+            } else {
+                newText.removeAttribute(.backgroundColor, range: range)
+            }
+        }
+        attributedText = newText
+        if selectedRange.length != attributedText.length {
+            textView.selectedRange = selectedRange
+            textView.scrollRangeToVisible(selectedRange)
+        }
+    }
+    
+    
+    func appendTexts(newText: NSAttributedString) {
+        let text = attributedText.mutable
+        text.append(NSAttributedString(string: "\n"))
+        text.append(newText)
+        attributedText = text
+        textView.scrollToBottom(animated: true)
     }
 }
 
@@ -155,20 +201,53 @@ extension TextEditorManger {
         
         return pdfData
     }
+    
+    func convertToImages()  -> [UIImage] {
+        if let data = convertToPDF(), let cgData = CGDataProvider(data: data) {
+            guard let document = CGPDFDocument(cgData) else { return [] }
+            var images = [UIImage]()
+            for i in (1..<document.numberOfPages+1) {
+                guard let page = document.page(at: i) else { continue }
+                let pageRect = page.getBoxRect(.artBox)
+                let renderer = UIGraphicsImageRenderer(size: pageRect.size)
+                let img = renderer.image { ctx in
+                    UIColor.white.set()
+                    ctx.fill(pageRect)
+                    
+                    ctx.cgContext.translateBy(x: 0.0, y: pageRect.size.height)
+                    ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
+                    
+                    ctx.cgContext.drawPDFPage(page)
+                }
+                let ciImage = CIImage(image: img)
+                let cgOrientation = CGImagePropertyOrientation(img.imageOrientation)
+                if let orientedImage = ciImage?.oriented(forExifOrientation: Int32(cgOrientation.rawValue)).uiImage {
+                    images.append(orientedImage)
+                }
+            }
+            return images
+        }
+        return []
+    }
+    
 }
 
 extension TextEditorManger: AutoCompleteTextViewDelegate {
     
-    func textView(didChange textView: AutoCompleteTextView) {
+    func textViewDidChange(_ textView: AutoCompleteTextView) {
+        SoundManager.vibrate(vibration: .soft)
+    }
+    
+    
+    func textViewDidEndEditing(_ textView: AutoCompleteTextView) {
+        isEditable = false
+    }
+    
+    func textViewDidBeginEditing(_ textView: AutoCompleteTextView) {
         objectWillChange.send()
     }
-    func textView(didBeginEditing textView: AutoCompleteTextView) {
-        isEditing = true
-    }
-    func textView(didEndEditing textView: AutoCompleteTextView) {
-        isEditing = false
-    }
-    func textView(layoutSubViews textView: AutoCompleteTextView) {
-        
+    
+    func textViewDidChangeSelection(_ textView: AutoCompleteTextView) {
+        objectWillChange.send()
     }
 }

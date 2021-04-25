@@ -9,7 +9,6 @@ import CoreData
 import UIKit
 
 extension Note {
-    var title: String { return attributedText?.string.lines().first ?? ""}
     
     static var allFetchRequest: NSFetchRequest<Note> {
         let request: NSFetchRequest<Note> = Note.fetchRequest()
@@ -35,17 +34,20 @@ extension Note {
         request.predicate = NSPredicate(format: "folder == %@", folder)
         return request
     }
-    
+    static func fetchRequest(for text: String) -> NSFetchRequest<Note>{
+        let request: NSFetchRequest<Note> = Note.fetchRequest()
+        request.predicate = NSPredicate(format: "text CONTAINS[cd] %@", text)
+        return request
+    }
     static func create(text: String, _ folder: Folder? = nil) -> Note {
-        let para = NSMutableParagraphStyle()
-        para.lineBreakMode = .byWordWrapping
-        let font = text.language == "my" ? UIFont.myanmarNoto : UIFont.preferredFont(forTextStyle: .body)
-        let attributedText = NSAttributedString(string: text, attributes: [.font: font, .paragraphStyle: para])
+       
+        let attributedText = text.noteAttributedText
         
         let viewContext = PersistenceController.shared.container.viewContext
         let note = Note(context: viewContext)
         note.id = UUID()
         note.attributedText = attributedText
+        note.text = attributedText.string
         note.created = Date()
         note.edited = Date()
         folder?.edited = Date()
@@ -58,7 +60,25 @@ extension Note {
         }
         return note
     }
+    static func create(text: NSAttributedString, _ folder: Folder? = nil) -> Note {
     
+        let viewContext = PersistenceController.shared.container.viewContext
+        let note = Note(context: viewContext)
+        note.id = UUID()
+        note.attributedText = text
+        note.text = text.string
+        note.created = Date()
+        note.edited = Date()
+        folder?.edited = Date()
+        note.folder = folder ?? Folder.getCurrentFolder()
+        do {
+            try viewContext.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        return note
+    }
     static func delete(note: Note) {
         PersistenceController.shared.container.viewContext.delete(note)
         

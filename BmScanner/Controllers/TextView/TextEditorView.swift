@@ -14,6 +14,7 @@ struct TextEditorView: View {
     private let manager: StateObject<TextEditorManger>
     private let note: Note
     private var onDismiss: ((Bool) -> Void)?
+    
     init(note: Note, onDismiss: ((Bool) -> Void)? = nil ) {
         self.note = note
         self.onDismiss = onDismiss
@@ -21,29 +22,31 @@ struct TextEditorView: View {
     }
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             SUITextView(manager: manager.wrappedValue)
-            menuBar()
+            TextEditorBottomBar(manager: manager.wrappedValue, viewManager: viewManager)
         }
         .navigationBarBackButtonHidden(true)
-        .actionSheet(item: $viewManager.sheetType, content: getActionSheet)
         .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(DateFormatter.relativeDateFormatter.string(from: note.created ?? Date()))
         .navigationBarItems(leading: navBarLeading, trailing: navBarTrailing)
+        .actionSheet(item: $viewManager.sheetType, content: getActionSheet)
         .sheet(item: $viewManager.fullScreenType, content: { type in getFullScreen(type) })
-        .onAppear(perform: onAppear)
-    }
-    
-}
-// Actions
-extension TextEditorView {
-    private func onAppear() {
-        manager.wrappedValue.textView.attributedText = note.attributedText
+        .overlay(scannerButton.opacity(manager.wrappedValue.isEditing && manager.wrappedValue.isEditable ? 0 : 1))
     }
 }
+
 
 // SubViews
 extension TextEditorView {
-
+    
+    private var scannerButton: some View {
+        return ScannerButton(bottomSpace: 50) { note in
+            guard let newText = note?.attributedText else { return }
+            manager.wrappedValue.appendTexts(newText: newText)
+        }
+    }
+    
     private var navBarTrailing: some View {
         return HStack {
             Button(action: {
@@ -55,73 +58,38 @@ extension TextEditorView {
             Button(action: {
                 viewManager.sheetType = .ShareMenu
             }, label: {
-                Image(systemName: "square.and.arrow.up")
+                Image(systemName: "square.and.arrow.up").padding(.vertical)
             })
         }
     }
+    
     private var navBarLeading: some View {
-        return HStack {
+        return HStack(spacing: 0) {
             Button("Done") {
                 if note.attributedText != manager.wrappedValue.attributedText {
-                    note.attributedText = manager.wrappedValue.textView.attributedText
+                    note.attributedText = manager.wrappedValue.attributedText
+                    note.text = note.attributedText?.string
                     note.edited = Date()
                     onDismiss?(true)
+                    SoundManager.vibrate(vibration: .soft)
                 }
                 presentationMode.wrappedValue.dismiss()
             }
-            Group {
-                Text(manager.wrappedValue.currentFont.name)
-                Text(manager.wrappedValue.fontSize.rounded().description)
-            }.foregroundColor(Color(.tertiaryLabel)).font(.callout)
+            .padding(.vertical)
             
         }
     }
-    private func menuBar() -> some View {
-        return HStack {
-            
-            Button(action: {
-                manager.wrappedValue.redo()
-            }, label: {
-                Text("Undo").padding()
-            }).disabled(!manager.wrappedValue.hasHistory)
-            
-            Button(action: {
-                manager.wrappedValue.toggleSelectAllTexts()
-            }, label: {
-                Image(systemName: "square.on.square").padding()
-            })
-            
-            Spacer()
-            
-            Button(action: {
-                manager.wrappedValue.downSize()
-            }, label: {
-                Image(systemName: "minus").padding(3)
-            })
-            Button(action: {
-                manager.wrappedValue.upSize()
-            }, label: {
-                Image(systemName: "plus").padding(3)
-            })
-            
-            Spacer()
-            Button(action: {
-                viewManager.sheetType = .FontMenu
-            }, label: {
-                Image(systemName: "textformat").padding()
-            })
-            
-        }
-    }
+    
 }
+
 // Full Screen
 extension TextEditorView {
+    
     private func getFullScreen(_ type: TextEditorViewViewManager.FullScreenType) -> some View {
-        
         return Group {
             switch type {
             case .ShareAttributedText:
-                if let x = manager.wrappedValue.textView.attributedText {
+                if let x = manager.wrappedValue.attributedText {
                     ActivityView(activityItems: [x])
                 }
             case .ShareAsPDF:
@@ -134,9 +102,11 @@ extension TextEditorView {
                 FolderPicker { folder in
                     note.folder = folder
                 }
+            case .ShareAsImages:
+                let images = manager.wrappedValue.convertToImages()
+                ActivityView(activityItems: images)
             }
         }
-        
     }
 }
 
@@ -159,14 +129,21 @@ extension TextEditorView {
         return ActionSheet(
             title: Text("Share Menu"),
             buttons: [
-                .default(Text("View as PDF"), action: {
+                .default(Text("View PDF"), action: {
                     viewManager.fullScreenType = .PDFViewer
                 }),
                 .default(Text("Export as PDF"), action: {
                     viewManager.fullScreenType = .ShareAsPDF
                 }),
+                .default(Text("Export as Image"), action: {
+                    viewManager.fullScreenType = .ShareAsImages
+                }),
                 .default(Text("Export as Plain Text"), action: {
                     viewManager.fullScreenType = .ShareAttributedText
+                }),
+                .default(Text("Copy to Clipboard"), action: {
+                    
+                    UIPasteboard.general.string = manager.wrappedValue.attributedText.string
                 }),
                 .cancel()
             ]
@@ -176,16 +153,14 @@ extension TextEditorView {
         return ActionSheet(
             title: Text("Font Design"),
             buttons: [
-                .default(Text("Regular"), action: {
-                    manager.wrappedValue.currentFont = .Regular
+                .default(Text("Regular Font"), action: {
+                    manager.wrappedValue.updateFont(currentFont: .Regular)
                 }),
-                .default(Text("Bold"), action: {
-                    
-                    manager.wrappedValue.currentFont = .Bold
+                .default(Text("Bold Font"), action: {
+                    manager.wrappedValue.updateFont(currentFont: .Bold)
                 }),
-                .default(Text("Light"), action: {
-            
-                    manager.wrappedValue.currentFont = .Light
+                .default(Text("Light Font"), action: {
+                    manager.wrappedValue.updateFont(currentFont: .Light)
                 }),
                 .cancel()
             ]
@@ -196,16 +171,18 @@ extension TextEditorView {
         return ActionSheet(
             title: Text("Info"),
             buttons: [
-                .default(Text("Change Folder"), action: {
+                .default(Text("Move folder to.."), action: {
                     viewManager.fullScreenType = .FolderPicker
                 }),
-                .default(Text("Copy Text"), action: {
-                    manager.wrappedValue.toggleSelectAllTexts()
-                    UIPasteboard.general.string = manager.wrappedValue.attributedText.string
-                }),
+                
+    
                 .destructive(Text("Delete this Note"), action: {
-                    note.delete()
-                    presentationMode.wrappedValue.dismiss()
+                    AlertPresenter.show(title: "Are you sure to delete this note?") { bool in
+                        if bool {
+                            note.delete()
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    }
                 }),
                 .cancel()
             ]

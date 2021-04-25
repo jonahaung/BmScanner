@@ -22,12 +22,10 @@ struct OCRView: View {
             VStack {
                 Spacer()
                 ImageView
-                if manager.showLoading {
-                    LoadingIndicator(color: .red)
-                }
                 Spacer()
                 BottomBar
             }
+            
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Text Recognizer")
             .navigationBarItems(leading: NavigationItemLeading, trailing: NavigationItemTrailing)
@@ -43,8 +41,8 @@ struct OCRView: View {
                 }
             })
             .onAppear(perform: onAppear)
-            
         }
+        .overlay(LoadingIndicator(color: .accentColor).opacity(manager.showLoading ? 1 : 0).padding(), alignment: .center)
     }
 }
 

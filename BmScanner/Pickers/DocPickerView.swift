@@ -15,7 +15,7 @@ struct DocPickerView: UIViewControllerRepresentable {
     typealias UIViewControllerType = UIDocumentPickerViewController
     
     var onPickImage: (UIImage) -> Void
-    
+    var onGetText: (NSAttributedString) -> Void
     
     
     func makeCoordinator() -> Coordinator {
@@ -52,15 +52,26 @@ struct DocPickerView: UIViewControllerRepresentable {
                         url.stopAccessingSecurityScopedResource()
                     }
                 }
-                if let image = drawPDFfromURL(url: url.absoluteURL) {
-                    controller.dismiss(animated: true) { [weak self] in
-                        self?.parent.onPickImage(image)
+                if let pdf = PDFDocument(url: url) {
+                    let pageCount = pdf.pageCount
+                    let documentContent = NSMutableAttributedString()
+
+                    for i in 1 ..< pageCount {
+                        guard let page = pdf.page(at: i) else { continue }
+                        guard let pageContent = page.attributedString else { continue }
+                        documentContent.append(pageContent)
                     }
-                } else if let image = UIImage(contentsOfFile: url.path) {
-                    controller.dismiss(animated: true) { [weak self] in
-                        self?.parent.onPickImage(image)
+                    if !documentContent.string.isWhitespace {
+                        parent.onGetText(documentContent)
+                    }else if let image = drawPDFfromURL(url: url.absoluteURL) {
+                        parent.onPickImage(image)
+                    } else if let image = UIImage(contentsOfFile: url.path) {
+                        parent.onPickImage(image)
                     }
+                    controller.dismiss(animated: true, completion: nil)
                 }
+                
+                
             }
         }
         

@@ -18,8 +18,8 @@ struct SettingCell: View {
             Image(systemName: imageName)
                 .foregroundColor(.accentColor)
             Text(text)
+            Spacer()
             if let x = subtitle {
-                Spacer()
                 Text(x)
                     .foregroundColor(Color(.tertiaryLabel))
             }

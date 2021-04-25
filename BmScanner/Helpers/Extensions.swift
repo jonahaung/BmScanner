@@ -8,6 +8,17 @@
 import UIKit
 import NaturalLanguage
 
+extension String {
+    var noteAttributedText: NSAttributedString {
+        let isMyanmar = self.language == "my"
+        let para = NSMutableParagraphStyle()
+        para.lineBreakMode = .byWordWrapping
+        para.lineBreakStrategy = .pushOut
+        let font = isMyanmar ? UIFont.myanmarNoto : UIFont.engFont
+        return NSAttributedString(string: self, attributes: [.font: font, .paragraphStyle: para as NSParagraphStyle, .foregroundColor: UIColor.label])
+        
+    }
+}
 extension CharacterSet {
     
     static let removingCharacters = CharacterSet(charactersIn: "|+*#%;:&^$@!~.,'`|_ၤ”“")
@@ -20,7 +31,7 @@ extension CharacterSet {
 extension String {
     
     var language: String {
-
+        
         return NSLinguisticTagger.dominantLanguage(for: self) ?? ""
     }
     func cleanUpMyanmarTexts() -> String {
@@ -29,16 +40,16 @@ extension String {
             texts = self.replacingCharacters(in: range, with: " ")
         }
         
-//        let segs = MyanmarReSegment.segment(self)
-//        print(segs)
-//        var filtered = [String]()
-//        segs.forEach { seg in
-//            var new = seg
-//            if replaces.contains(seg) {
-//                new = " "
-//            }
-//            filtered.append(new)
-//        }
+        //        let segs = MyanmarReSegment.segment(self)
+        //        print(segs)
+        //        var filtered = [String]()
+        //        segs.forEach { seg in
+        //            var new = seg
+        //            if replaces.contains(seg) {
+        //                new = " "
+        //            }
+        //            filtered.append(new)
+        //        }
         return texts
     }
     
