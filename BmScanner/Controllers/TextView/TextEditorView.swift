@@ -76,10 +76,8 @@ extension TextEditorView {
                 presentationMode.wrappedValue.dismiss()
             }
             .padding(.vertical)
-            
         }
     }
-    
 }
 
 // Full Screen
@@ -121,10 +119,11 @@ extension TextEditorView {
             return shareSheet()
         case .InfoSheet:
             return infoSheet()
-        case .AlignmentSheet:
-            return alignmentSheetSheet()
+        case .EditMenuSheet:
+            return editMenuSheet()
         }
     }
+    
     private func shareSheet() -> ActionSheet {
         return ActionSheet(
             title: Text("Share Menu"),
@@ -153,13 +152,13 @@ extension TextEditorView {
         return ActionSheet(
             title: Text("Font Design"),
             buttons: [
-                .default(Text("Regular Font"), action: {
+                .default(Text("Regular"), action: {
                     manager.wrappedValue.updateFont(currentFont: .Regular)
                 }),
-                .default(Text("Bold Font"), action: {
+                .default(Text("Bold"), action: {
                     manager.wrappedValue.updateFont(currentFont: .Bold)
                 }),
-                .default(Text("Light Font"), action: {
+                .default(Text("Light"), action: {
                     manager.wrappedValue.updateFont(currentFont: .Light)
                 }),
                 .cancel()
@@ -175,7 +174,7 @@ extension TextEditorView {
                     viewManager.fullScreenType = .FolderPicker
                 }),
                 
-    
+                
                 .destructive(Text("Delete this Note"), action: {
                     AlertPresenter.show(title: "Are you sure to delete this note?") { bool in
                         if bool {
@@ -189,10 +188,19 @@ extension TextEditorView {
         )
     }
     
-    private func alignmentSheetSheet() -> ActionSheet {
+    private func editMenuSheet() -> ActionSheet {
         return ActionSheet(
-            title: Text("Info"),
+            title: Text("Edit"),
             buttons: [
+                .default(Text("Join Selected Texts"), action: {
+                    manager.wrappedValue.joinTexts()
+                }),
+                .default(Text("Highlight"), action: {
+                    manager.wrappedValue.highlight()
+                }),
+                .default(Text("Update Font"), action: {
+                    viewManager.sheetType = .FontMenu
+                }),
                 .cancel()
             ]
         )

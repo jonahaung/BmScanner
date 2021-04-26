@@ -32,10 +32,7 @@ final class TextEditorManger: ObservableObject {
             }
         }
     }
-    var isSelectedAll: Bool {
-        return textView.selectedRange == NSRange(location: 0, length: attributedText.length)
-    }
-
+    
     var hasSelectedText: Bool {
         return textView.selectedRange.length > 0
     }
@@ -159,11 +156,21 @@ extension TextEditorManger {
     
     
     func appendTexts(newText: NSAttributedString) {
-        let text = attributedText.mutable
-        text.append(NSAttributedString(string: "\n"))
-        text.append(newText)
-        attributedText = text
+        let originalText = attributedText.mutable
+        originalText.append(NSAttributedString(string: "\n\n"))
+        originalText.append(newText)
+        attributedText = originalText
         textView.scrollToBottom(animated: true)
+    }
+    
+    func joinTexts() {
+        let selectedRanage = textView.selectedRange
+        let selectedText = attributedText.attributedSubstring(from: selectedRanage).string.lines().joined(separator: " ")
+        UIPasteboard.general.string = selectedText
+        if let x = textView.selectedTextRange {
+            textView.replace(x, withText: selectedText)
+            updateHistory()
+        }
     }
 }
 
@@ -213,7 +220,6 @@ extension TextEditorManger {
                 let img = renderer.image { ctx in
                     UIColor.white.set()
                     ctx.fill(pageRect)
-                    
                     ctx.cgContext.translateBy(x: 0.0, y: pageRect.size.height)
                     ctx.cgContext.scaleBy(x: 1.0, y: -1.0)
                     

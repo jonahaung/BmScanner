@@ -9,17 +9,11 @@ import SwiftUI
 
 struct SettingsView: View {
     
-    
-    
     @AppStorage(UserDefaultManager.shared._hasShownOnboarding) private var hasShownOnboarding: Bool = UserDefaultManager.shared.hasShownOnboarding
-    
-    
     @AppStorage(UserDefaultManager.shared._appFontDesign) private var appFontDesignIndex: Int = UserDefaultManager.shared.appFontDesign.rawValue
     @AppStorage(UserDefaultManager.shared._appFontSize) private var appFontSize: Double = UserDefaultManager.shared.appFontSize
-    
     @AppStorage(UserDefaultManager.shared._appTintColor) private var appTintColorIndex: Int = UserDefaultManager.shared.appTintColor.rawValue
     @AppStorage(UserDefaultManager.shared._languageMode) private var languageModeIndex: Int = UserDefaultManager.shared.lanaguageMode.rawValue
-
     @StateObject private var manager = SettingManager()
     
 

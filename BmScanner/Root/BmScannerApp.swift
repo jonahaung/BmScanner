@@ -33,11 +33,6 @@ struct BmScannerApp: App {
         }
         .onChange(of: scenePhase, perform: handleScenePhase(_:))
     }
-    
-    init() {
-        let toolbar = UIToolbar.appearance()
-        toolbar.isTranslucent = false
-    }
 }
 
 extension BmScannerApp {

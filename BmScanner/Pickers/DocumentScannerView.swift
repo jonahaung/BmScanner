@@ -18,7 +18,6 @@ struct DocumentScannerView: UIViewControllerRepresentable {
     func makeUIViewController(context: UIViewControllerRepresentableContext<DocumentScannerView>) -> VNDocumentCameraViewController {
         let x = VNDocumentCameraViewController()
         x.delegate = context.coordinator
-        
         return x
     }
     

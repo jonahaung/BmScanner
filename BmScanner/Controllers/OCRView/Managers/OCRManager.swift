@@ -26,7 +26,6 @@ extension OCRManager {
         
         let languageMode = UserDefaultManager.shared.lanaguageMode
         if languageMode == .English {
-            
             recognizeEnglishText(image)
         } else {
             recognizeMyanmarTexts(image, languageMode)
@@ -77,7 +76,7 @@ extension OCRManager {
                 sself.showLoading = false
                 return
             }
-            let text = resultTexts.joined(separator: " ")
+            let text = resultTexts.joined(separator: "\n")
             sself.onGetTexts?(text)
         }
         
@@ -89,7 +88,8 @@ extension OCRManager {
         showLoading = true
         Async.userInitiated { [weak self] in
             let tesseract = Tesseract(languages: languageMode.recognitionLanguage, dataSource: Bundle.main, engineMode: .lstmOnly)
-            tesseract.performOCRPublisher(on: image).sink { [weak self] complete in
+            tesseract.performOCRPublisher(on: image)
+                .sink { [weak self] complete in
                 guard let self = self else { return }
                 
                 switch complete {
@@ -106,8 +106,8 @@ extension OCRManager {
             } receiveValue: { [weak self] string in
                 Async.main { [weak self] in
                     guard let self = self else { return }
-                    let lines = string.lines().filter{!$0.isWhitespace}
-                    let text = lines.joined(separator: " ")
+                    let lines = string.components(separatedBy: .newlines).filter{!$0.isWhitespace}
+                    let text = lines.joined(separator: "\n")
                     self.onGetTexts?(text)
                 }
             }.cancel()

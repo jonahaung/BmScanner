@@ -20,6 +20,7 @@ struct Home_RecentNotesView: View {
             .onDelete(perform: removeRows(at:))
         }
     }
+    
     private func removeRows(at offsets: IndexSet) {
         AlertPresenter.show(title: "Are you sure you want to delete this folder?", message: nil) { bool in
             if bool {

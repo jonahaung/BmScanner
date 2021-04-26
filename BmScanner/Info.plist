@@ -21,11 +21,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>To Do</string>
+	<string>Your permission is needed so that we can access your device&apos;s camera to scan the documents.</string>
 	<key>NSDocumentsFolderUsageDescription</key>
-	<string>To Do</string>
+	<string>Your permission is needed so that we can access your Document Folder to pick the documents.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>To Do</string>
+	<string>Your permission is needed so that we can access your Photo Library to pick the images.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MyanmarSansPro.ttf</string>

@@ -97,7 +97,9 @@ extension AutoCompleteTextView {
         showsHorizontalScrollIndicator = false
         keyboardDismissMode = .interactive
         dataDetectorTypes = .all
-        
+        let para = NSMutableParagraphStyle()
+        para.lineBreakMode = .byWordWrapping
+        typingAttributes.updateValue(para, forKey: .paragraphStyle)
         let rightGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipeRight(_:)))
         rightGesture.direction = .right
         addGestureRecognizer(rightGesture)
@@ -180,15 +182,15 @@ extension AutoCompleteTextView: UIGestureRecognizerDelegate {
     }
     
     
-    //    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-    //        super.touchesBegan(touches, with: event)
-    //        guard !isEditable else { return }
-    //        if let first = touches.first {
-    //            let position = first.location(in: self)
-    //            let textRange = self.getLineRangeAtPosition(position)
-    //            selectedTextRange = textRange
-    //        }
-    //
-    //    }
+//        override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+//            super.touchesBegan(touches, with: event)
+//            guard !isEditable else { return }
+//            if let first = touches.first {
+//                let position = first.location(in: self)
+//                let textRange = self.getLineRangeAtPosition(position)
+//                selectedTextRange = textRange
+//            }
+//    
+//        }
     
 }

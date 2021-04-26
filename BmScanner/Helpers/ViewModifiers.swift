@@ -13,7 +13,7 @@ struct RoundedButton: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding()
-            .background(BlurredView())
+            .background(Color(.systemBackground))
             .clipShape(Circle())
             .shadow(radius: 5)
     }

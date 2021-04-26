@@ -40,8 +40,7 @@ struct TextEditorBottomBar: View {
             Button(action: {
                 manager.redo()
             }, label: {
-                Image(systemName: "arrow.uturn.left.circle.fill")
-                    .padding()
+                Text("Undo").padding(.leading)
             })
             .disabled(!manager.hasHistory)
             
@@ -61,17 +60,9 @@ struct TextEditorBottomBar: View {
             })
             Spacer()
             Button(action: {
-                viewManager.sheetType = .FontMenu
+                viewManager.sheetType = .EditMenuSheet
             }, label: {
-                Image(systemName: "bold.underline")
-                    .padding()
-            })
-            .disabled(!manager.hasSelectedText)
-            Spacer()
-            Button(action: {
-                manager.highlight()
-            }, label: {
-                Image(systemName: "highlighter")
+                Image(systemName: "tuningfork")
                     .padding()
             })
             .disabled(!manager.hasSelectedText)
@@ -80,9 +71,10 @@ struct TextEditorBottomBar: View {
                 manager.isEditable.toggle()
                 if manager.isEditable {
                     manager.isEditing = true
+                    manager.textView.ensureCaretToTheEnd()
                 }
             }, label: {
-                Image(systemName: "square.and.pencil")
+                Image(systemName: "pencil.and.outline")
                     .padding()
             })
         }

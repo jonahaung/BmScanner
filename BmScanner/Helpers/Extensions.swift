@@ -11,11 +11,12 @@ import NaturalLanguage
 extension String {
     var noteAttributedText: NSAttributedString {
         let isMyanmar = self.language == "my"
-        let para = NSMutableParagraphStyle()
-        para.lineBreakMode = .byWordWrapping
-        para.lineBreakStrategy = .pushOut
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .natural
+        paragraphStyle.lineBreakMode = .byWordWrapping
+        paragraphStyle.lineBreakStrategy = .hangulWordPriority
         let font = isMyanmar ? UIFont.myanmarNoto : UIFont.engFont
-        return NSAttributedString(string: self, attributes: [.font: font, .paragraphStyle: para as NSParagraphStyle, .foregroundColor: UIColor.label])
+        return NSAttributedString(string: self, attributes: [.font: font, .paragraphStyle: paragraphStyle, .foregroundColor: UIColor.label])
         
     }
 }

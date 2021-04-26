@@ -11,7 +11,7 @@ class TextEditorViewViewManager: ObservableObject {
     
     enum ActionSheetType: Identifiable {
         var id: ActionSheetType { return self }
-        case ShareMenu, FontMenu, InfoSheet, AlignmentSheet
+        case ShareMenu, FontMenu, InfoSheet, EditMenuSheet
     }
     
     enum FullScreenType: Identifiable {
