@@ -45,7 +45,6 @@
 		4729149D26227A9400F0D545 /* DocumentScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4729149C26227A9400F0D545 /* DocumentScannerView.swift */; };
 		472BA5D6262BB6A000E2B794 /* FolderPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472BA5D5262BB6A000E2B794 /* FolderPicker.swift */; };
 		472BA653262C625300E2B794 /* ScannerButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472BA652262C625300E2B794 /* ScannerButton.swift */; };
-		473634E82624994600697679 /* TextEditorViewViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473634E72624994600697679 /* TextEditorViewViewManager.swift */; };
 		473634ED2624AE5100697679 /* AutoCompleteTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473634EC2624AE5100697679 /* AutoCompleteTextView.swift */; };
 		473634FB2624AFE600697679 /* Ext+UITextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473634FA2624AFE600697679 /* Ext+UITextView.swift */; };
 		473635012624B05600697679 /* WordPredictManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473634FF2624B05600697679 /* WordPredictManager.swift */; };
@@ -56,7 +55,6 @@
 		473635272624B1B900697679 /* words2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 473635252624B1B900697679 /* words2.txt */; };
 		473FCF3D2634BF2800A4EDDB /* TextEditorBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473FCF3C2634BF2800A4EDDB /* TextEditorBottomBar.swift */; };
 		473FCF4D2634C17500A4EDDB /* BlurredView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473FCF412634C11700A4EDDB /* BlurredView.swift */; };
-		475AC774262A17D9002F00EF /* TextEditorFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AC773262A17D9002F00EF /* TextEditorFont.swift */; };
 		475AC77F262A2EA1002F00EF /* Note+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AC77E262A2EA1002F00EF /* Note+Ext.swift */; };
 		475AC784262A2FF3002F00EF /* Home_RecentFoldersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AC783262A2FF2002F00EF /* Home_RecentFoldersView.swift */; };
 		475AC789262A301D002F00EF /* FolderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475AC788262A301D002F00EF /* FolderCell.swift */; };
@@ -161,7 +159,6 @@
 		4729149C26227A9400F0D545 /* DocumentScannerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
 		472BA5D5262BB6A000E2B794 /* FolderPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPicker.swift; sourceTree = "<group>"; };
 		472BA652262C625300E2B794 /* ScannerButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerButton.swift; sourceTree = "<group>"; };
-		473634E72624994600697679 /* TextEditorViewViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextEditorViewViewManager.swift; sourceTree = "<group>"; };
 		473634EC2624AE5100697679 /* AutoCompleteTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoCompleteTextView.swift; sourceTree = "<group>"; };
 		473634FA2624AFE600697679 /* Ext+UITextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Ext+UITextView.swift"; sourceTree = "<group>"; };
 		473634FF2624B05600697679 /* WordPredictManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WordPredictManager.swift; sourceTree = "<group>"; };
@@ -502,7 +499,6 @@
 			isa = PBXGroup;
 			children = (
 				4783FFFA2628D95300A4FEA9 /* TextEditorManager.swift */,
-				473634E72624994600697679 /* TextEditorViewViewManager.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -799,7 +795,6 @@
 				47A535A426236F18000DAFDB /* CGPoint+Utils.swift in Sources */,
 				471BF5E9262A8DA1002E3C0A /* Home_SystemItemsView.swift in Sources */,
 				4729140F262274B600F0D545 /* BmScannerApp.swift in Sources */,
-				475AC774262A17D9002F00EF /* TextEditorFont.swift in Sources */,
 				472914752622752600F0D545 /* AlertPresenter.swift in Sources */,
 				477D67F426229A6100EDB2EB /* Utils.swift in Sources */,
 				472914842622752700F0D545 /* AppFontDesign.swift in Sources */,
@@ -837,7 +832,6 @@
 				4729147B2622752700F0D545 /* WelcomeView.swift in Sources */,
 				472914782622752700F0D545 /* SettingsView.swift in Sources */,
 				472156C4262A9A2B00711F7F /* Folder+Ext.swift in Sources */,
-				473634E82624994600697679 /* TextEditorViewViewManager.swift in Sources */,
 				470F86262623C5DE002164B6 /* OCRViewManager.swift in Sources */,
 				473635072624B08B00697679 /* MarkovModel.swift in Sources */,
 				473635022624B05600697679 /* WordSegmentationManager.swift in Sources */,

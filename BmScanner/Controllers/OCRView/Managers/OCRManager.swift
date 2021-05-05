@@ -107,7 +107,7 @@ extension OCRManager {
                 Async.main { [weak self] in
                     guard let self = self else { return }
                     let lines = string.components(separatedBy: .newlines).filter{!$0.isWhitespace}
-                    let text = lines.joined(separator: "\n")
+                    let text = lines.joined(separator: "\n").cleanUpMyanmarTexts()
                     self.onGetTexts?(text)
                 }
             }.cancel()

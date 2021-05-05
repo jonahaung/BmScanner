@@ -13,18 +13,16 @@ struct Home_RecentNotesView: View {
     private var notes: FetchedResults<Note>
     
     var body: some View {
-        Group {
-            ForEach(notes) { note in
-                NoteCell(note: note)
-            }
-            .onDelete(perform: removeRows(at:))
+        ForEach(notes) { note in
+            NoteCell(note: note)
         }
+        .onDelete(perform: removeRows(at:))
     }
     
     private func removeRows(at offsets: IndexSet) {
-        AlertPresenter.show(title: "Are you sure you want to delete this folder?", message: nil) { bool in
-            if bool {
-                offsets.forEach { i in
+        offsets.forEach { i in
+            AlertPresenter.show(title: "Are you sure you want to delete this folder?", message: nil) { bool in
+                if bool {
                     let object = notes[i]
                     object.delete()
                 }

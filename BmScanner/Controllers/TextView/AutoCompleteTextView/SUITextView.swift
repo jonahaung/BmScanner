@@ -10,11 +10,10 @@ import UIKit
 
 struct SUITextView: UIViewRepresentable {
     
-    @StateObject var manager: TextEditorManger
+    let textView: AutoCompleteTextView
     
     func makeUIView(context: Context) -> AutoCompleteTextView {
-        let x = manager.textView
-        return x
+        return textView
     }
     
     func updateUIView(_ uiView: AutoCompleteTextView, context: Context) {

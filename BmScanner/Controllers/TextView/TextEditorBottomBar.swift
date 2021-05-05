@@ -10,29 +10,11 @@ import SwiftUI
 struct TextEditorBottomBar: View {
     
     @StateObject var manager: TextEditorManger
-    @StateObject var viewManager: TextEditorViewViewManager
+    @Environment(\.editMode) private var editMode
     
     var body: some View {
-        Group {
-            if manager.isEditable {
-                editableBar
-            }else {
-                unEditableBar
-            }
-        }
-    }
-    
-    private var editableBar: some View {
-        return HStack {
-            Spacer()
-            
-            Button(action: {
-                manager.isEditing.toggle()
-            }, label: {
-                Image(systemName: manager.isEditing ? "chevron.down" : "square.and.pencil")
-                    .padding()
-            })
-        }
+        unEditableBar
+            .edgesIgnoringSafeArea(.bottom)
     }
     
     private var unEditableBar: some View {
@@ -60,23 +42,34 @@ struct TextEditorBottomBar: View {
             })
             Spacer()
             Button(action: {
-                viewManager.sheetType = .EditMenuSheet
+                manager.sheetType = .EditMenuSheet
             }, label: {
-                Image(systemName: "tuningfork")
+                Image(systemName: "function")
                     .padding()
-            })
-            .disabled(!manager.hasSelectedText)
+            }).disabled(manager.textView.selectedRange.length == 0)
+            
             Spacer()
             Button(action: {
-                manager.isEditable.toggle()
-                if manager.isEditable {
-                    manager.isEditing = true
-                    manager.textView.ensureCaretToTheEnd()
-                }
+                editMode?.wrappedValue.toggle()
             }, label: {
-                Image(systemName: "pencil.and.outline")
+                Image(systemName: editMode?.wrappedValue == .active ? "keyboard.chevron.compact.down" : "square.and.pencil")
                     .padding()
+                    
             })
         }
+        .font(.system(size: UIFont.buttonFontSize, weight: .semibold))
+        .onChange(of: editMode?.wrappedValue) { newValue in
+            if let mode = newValue {
+                self.manager.editingChanged(isEditing: mode.isEditing)
+            }
+        }
+    }
+}
+
+
+extension EditMode {
+
+    mutating func toggle() {
+        self = self == .active ? .inactive : .active
     }
 }

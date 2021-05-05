@@ -60,10 +60,7 @@ struct FolderView: View {
     }
     
     private var scannerButton: some View {
-        return ScannerButton(folder: folder, onGetNote: { note in
-            guard let note = note else { return }
-            note.folder = folder
-        }, showSearchBar: true)
+        return ScannerButton(folder: folder, showSearchBar: true)
     }
     
     private func onDelete(offsets: IndexSet) {

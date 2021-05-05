@@ -8,15 +8,20 @@
 import UIKit
 import NaturalLanguage
 
-extension String {
-    var noteAttributedText: NSAttributedString {
-        let isMyanmar = self.language == "my"
+extension NSMutableParagraphStyle {
+    static var defaultStyle: NSMutableParagraphStyle {
         let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .natural
         paragraphStyle.lineBreakMode = .byWordWrapping
         paragraphStyle.lineBreakStrategy = .hangulWordPriority
-        let font = isMyanmar ? UIFont.myanmarNoto : UIFont.engFont
-        return NSAttributedString(string: self, attributes: [.font: font, .paragraphStyle: paragraphStyle, .foregroundColor: UIColor.label])
+        paragraphStyle.allowsDefaultTighteningForTruncation = true
+        return paragraphStyle
+    }
+}
+extension String {
+    var noteAttributedText: NSAttributedString {
+        let font = self.language == "my" ? UIFont.myanmarNoto : UIFont.engFont
+        let attributes: [NSAttributedString.Key: Any] = [.font: font, .paragraphStyle: NSMutableParagraphStyle.defaultStyle, .foregroundColor: UIColor.label]
+        return NSAttributedString(string: self, attributes: attributes)
         
     }
 }

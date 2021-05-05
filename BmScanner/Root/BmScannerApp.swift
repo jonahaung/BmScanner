@@ -30,6 +30,7 @@ struct BmScannerApp: App {
             .font(.system(size: CGFloat(appFontSize), design: AppFontDesign(rawValue: appFontDesign)!.design))
             .accentColor(AppTintColor(rawValue: appTintColor)?.color)
             .listStyle(InsetGroupedListStyle())
+            .navigationViewStyle(StackNavigationViewStyle())
         }
         .onChange(of: scenePhase, perform: handleScenePhase(_:))
     }

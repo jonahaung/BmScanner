@@ -10,29 +10,29 @@ import SwiftUI
 struct TextEditorView: View {
     
     @Environment(\.presentationMode) private var presentationMode
-    @StateObject private var viewManager = TextEditorViewViewManager()
     private let manager: StateObject<TextEditorManger>
     private let note: Note
-    private var onDismiss: ((Bool) -> Void)?
+    
     
     init(note: Note, onDismiss: ((Bool) -> Void)? = nil ) {
         self.note = note
-        self.onDismiss = onDismiss
         manager = StateObject(wrappedValue: TextEditorManger(note: note))
     }
     
     var body: some View {
         VStack(spacing: 0) {
-            SUITextView(manager: manager.wrappedValue)
-            TextEditorBottomBar(manager: manager.wrappedValue, viewManager: viewManager)
+            SUITextView(textView: manager.wrappedValue.textView)
+            
+            Divider().padding(.horizontal)
+            TextEditorBottomBar(manager: manager.wrappedValue)
         }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(DateFormatter.relativeDateFormatter.string(from: note.created ?? Date()))
         .navigationBarItems(leading: navBarLeading, trailing: navBarTrailing)
-        .actionSheet(item: $viewManager.sheetType, content: getActionSheet)
-        .sheet(item: $viewManager.fullScreenType, content: { type in getFullScreen(type) })
-        .overlay(scannerButton.opacity(manager.wrappedValue.isEditing && manager.wrappedValue.isEditable ? 0 : 1))
+        .actionSheet(item: manager.projectedValue.sheetType, content: getActionSheet)
+        .sheet(item: manager.projectedValue.fullScreenType, content: { type in getFullScreen(type) })
+        .overlay(scannerButton)
     }
 }
 
@@ -41,22 +41,23 @@ struct TextEditorView: View {
 extension TextEditorView {
     
     private var scannerButton: some View {
-        return ScannerButton(bottomSpace: 50) { note in
-            guard let newText = note?.attributedText else { return }
+        return ScannerButton(alignment: .trailing) { txt in
+            guard let newText = txt else { return }
             manager.wrappedValue.appendTexts(newText: newText)
         }
     }
     
     private var navBarTrailing: some View {
         return HStack {
+            
             Button(action: {
-                viewManager.sheetType = .InfoSheet
+                manager.wrappedValue.sheetType = .InfoSheet
             }, label: {
                 Image(systemName: "info").padding()
             })
             
             Button(action: {
-                viewManager.sheetType = .ShareMenu
+                manager.wrappedValue.sheetType = .ShareMenu
             }, label: {
                 Image(systemName: "square.and.arrow.up").padding(.vertical)
             })
@@ -64,18 +65,11 @@ extension TextEditorView {
     }
     
     private var navBarLeading: some View {
-        return HStack(spacing: 0) {
+        return Group {
             Button("Done") {
-                if note.attributedText != manager.wrappedValue.attributedText {
-                    note.attributedText = manager.wrappedValue.attributedText
-                    note.text = note.attributedText?.string
-                    note.edited = Date()
-                    onDismiss?(true)
-                    SoundManager.vibrate(vibration: .soft)
-                }
+                manager.wrappedValue.save()
                 presentationMode.wrappedValue.dismiss()
             }
-            .padding(.vertical)
         }
     }
 }
@@ -83,7 +77,7 @@ extension TextEditorView {
 // Full Screen
 extension TextEditorView {
     
-    private func getFullScreen(_ type: TextEditorViewViewManager.FullScreenType) -> some View {
+    private func getFullScreen(_ type: TextEditorManger.FullScreenType) -> some View {
         return Group {
             switch type {
             case .ShareAttributedText:
@@ -111,16 +105,18 @@ extension TextEditorView {
 // Sheets
 extension TextEditorView {
     
-    private func getActionSheet(_ type: TextEditorViewViewManager.ActionSheetType) -> ActionSheet {
+    private func getActionSheet(_ type: TextEditorManger.ActionSheetType) -> ActionSheet {
         switch type {
-        case .FontMenu:
-            return fontSheet()
         case .ShareMenu:
             return shareSheet()
         case .InfoSheet:
             return infoSheet()
         case .EditMenuSheet:
             return editMenuSheet()
+        case .AlignmentSheet:
+            return alignmentSheet()
+        case .FontWeightSheet:
+            return fontSheet()
         }
     }
     
@@ -129,16 +125,16 @@ extension TextEditorView {
             title: Text("Share Menu"),
             buttons: [
                 .default(Text("View PDF"), action: {
-                    viewManager.fullScreenType = .PDFViewer
+                    manager.wrappedValue.fullScreenType = .PDFViewer
                 }),
                 .default(Text("Export as PDF"), action: {
-                    viewManager.fullScreenType = .ShareAsPDF
+                    manager.wrappedValue.fullScreenType = .ShareAsPDF
                 }),
                 .default(Text("Export as Image"), action: {
-                    viewManager.fullScreenType = .ShareAsImages
+                    manager.wrappedValue.fullScreenType = .ShareAsImages
                 }),
                 .default(Text("Export as Plain Text"), action: {
-                    viewManager.fullScreenType = .ShareAttributedText
+                    manager.wrappedValue.fullScreenType = .ShareAttributedText
                 }),
                 .default(Text("Copy to Clipboard"), action: {
                     
@@ -148,30 +144,14 @@ extension TextEditorView {
             ]
         )
     }
-    private func fontSheet() -> ActionSheet {
-        return ActionSheet(
-            title: Text("Font Design"),
-            buttons: [
-                .default(Text("Regular"), action: {
-                    manager.wrappedValue.updateFont(currentFont: .Regular)
-                }),
-                .default(Text("Bold"), action: {
-                    manager.wrappedValue.updateFont(currentFont: .Bold)
-                }),
-                .default(Text("Light"), action: {
-                    manager.wrappedValue.updateFont(currentFont: .Light)
-                }),
-                .cancel()
-            ]
-        )
-    }
+    
     
     private func infoSheet() -> ActionSheet {
         return ActionSheet(
             title: Text("Info"),
             buttons: [
                 .default(Text("Move folder to.."), action: {
-                    viewManager.fullScreenType = .FolderPicker
+                    manager.wrappedValue.fullScreenType = .FolderPicker
                 }),
                 
                 
@@ -189,17 +169,60 @@ extension TextEditorView {
     }
     
     private func editMenuSheet() -> ActionSheet {
+        var buttons = [Alert.Button]()
+        if let textRange = manager.wrappedValue.textView.selectedTextRange, let text = manager.wrappedValue.textView.text(in: textRange), text.components(separatedBy: .newlines).count > 1 {
+            let joinTextsButton = Alert.Button.default(Text("Join text-lines")) {
+                manager.wrappedValue.joinTexts()
+            }
+            
+            buttons.append(joinTextsButton)
+        }
+        
+        buttons.append(.default(Text("Text Alignment"), action: {
+            manager.wrappedValue.sheetType = .AlignmentSheet
+        }))
+        buttons.append(.default(Text("Font Style"), action: {
+            manager.wrappedValue.sheetType = .FontWeightSheet
+        }))
+        buttons.append(.default(Text("Highlight"), action: {
+            manager.wrappedValue.highlight()
+        }))
+        buttons.append(.cancel())
+        return ActionSheet( title: Text("Edit Text"), buttons: buttons)
+    }
+    
+    private func alignmentSheet() -> ActionSheet {
         return ActionSheet(
-            title: Text("Edit"),
+            title: Text("Text Alignment"),
             buttons: [
-                .default(Text("Join Selected Texts"), action: {
-                    manager.wrappedValue.joinTexts()
+                .default(Text("Left"), action: {
+                    manager.wrappedValue.updateAlignment(alignment: .left)
                 }),
-                .default(Text("Highlight"), action: {
-                    manager.wrappedValue.highlight()
+                .default(Text("Right"), action: {
+                    manager.wrappedValue.updateAlignment(alignment: .right)
                 }),
-                .default(Text("Update Font"), action: {
-                    viewManager.sheetType = .FontMenu
+                .default(Text("Center"), action: {
+                    manager.wrappedValue.updateAlignment(alignment: .center)
+                }),
+                .default(Text("Justify"), action: {
+                    manager.wrappedValue.updateAlignment(alignment: .justified)
+                }),
+                .cancel()
+            ]
+        )
+    }
+    private func fontSheet() -> ActionSheet {
+        return ActionSheet(
+            title: Text("Font Weights"),
+            buttons: [
+                .default(Text("Regular"), action: {
+                    manager.wrappedValue.updateFont(weight: .regular)
+                }),
+                .default(Text("Bold"), action: {
+                    manager.wrappedValue.updateFont(weight: .bold)
+                }),
+                .default(Text("Light"), action: {
+                    manager.wrappedValue.updateFont(weight: .light)
                 }),
                 .cancel()
             ]

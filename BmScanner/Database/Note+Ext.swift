@@ -18,13 +18,13 @@ extension Note {
     static var generalFetchRequest: NSFetchRequest<Note> {
         let request: NSFetchRequest<Note> = Note.fetchRequest()
         request.predicate = NSPredicate(format: "folder == NULL")
-        request.sortDescriptors = [NSSortDescriptor(key: "edited", ascending: false)]
+        request.sortDescriptors = [NSSortDescriptor(key: "created", ascending: false)]
         return request
     }
     static var homeViewFetchRequest: NSFetchRequest<Note> {
         let request: NSFetchRequest<Note> = Note.fetchRequest()
-        request.fetchLimit = 8
         request.sortDescriptors = [NSSortDescriptor(key: "edited", ascending: false)]
+        request.fetchLimit = 8
         return request
     }
     

@@ -13,12 +13,10 @@ struct Home_RecentFoldersView: View {
     private var folders: FetchedResults<Folder>
     
     var body: some View {
-        Group {
-            ForEach(folders) {
-                FolderCell(folder: $0)
-            }
-            .onDelete(perform: removeRows(at:))
+        ForEach(folders) {
+            FolderCell(folder: $0)
         }
+        .onDelete(perform: removeRows(at:))
     }
     
     private func removeRows(at offsets: IndexSet) {

@@ -15,6 +15,14 @@ struct FoldersView: View {
     var body: some View {
         List {
             Section(header: Text(folders.count.description + " items")) {
+                Button {
+                    Folder.createNewFolder()
+                } label: {
+                    HStack {
+                        Image(systemName: "plus")
+                        Text("Create New Folder")
+                    }
+                }
                 ForEach(folders) {
                     FolderCell(folder: $0)
                 }
