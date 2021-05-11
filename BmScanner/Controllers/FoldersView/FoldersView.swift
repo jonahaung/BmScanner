@@ -31,7 +31,8 @@ struct FoldersView: View {
         }
         .navigationTitle("All Folders")
         .navigationBarItems(trailing: EditButton())
-        
+        .overlay(SearchButton())
+        .overlay(ScannerButton(), alignment: .bottomTrailing)
     }
     private func removeRows(at offsets: IndexSet) {
         AlertPresenter.show(title: "Are you sure you want to delete this folder?", message: nil) { bool in

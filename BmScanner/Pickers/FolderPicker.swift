@@ -39,6 +39,9 @@ struct FolderPicker: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Foler Picker")
+            .navigationBarItems(trailing: Button("Cancel", action: {
+                presentationMode.wrappedValue.dismiss()
+            }))
         }
         .font(UserDefaultManager.shared.font())
         .accentColor(UserDefaultManager.shared.appTintColor.color)

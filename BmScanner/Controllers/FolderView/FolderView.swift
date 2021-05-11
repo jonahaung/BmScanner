@@ -56,11 +56,8 @@ struct FolderView: View {
         }
         .navigationTitle(folder?.name ?? folderType.description)
         .navigationBarItems(trailing: EditButton())
-        .overlay(scannerButton)
-    }
-    
-    private var scannerButton: some View {
-        return ScannerButton(folder: folder, showSearchBar: true)
+        .overlay(SearchButton())
+        .overlay(ScannerButton(folder: folder), alignment: .bottomTrailing)
     }
     
     private func onDelete(offsets: IndexSet) {

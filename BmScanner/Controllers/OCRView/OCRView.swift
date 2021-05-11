@@ -51,7 +51,6 @@ extension OCRView {
     private func onAppear() {
         manager.onGetTexts = { x in
             onGetTexts(x)
-            presentationMode.wrappedValue.dismiss()
         }
     }
     

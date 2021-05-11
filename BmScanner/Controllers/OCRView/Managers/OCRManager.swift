@@ -86,8 +86,8 @@ extension OCRManager {
         guard !showLoading else { return }
         
         showLoading = true
+        let tesseract = Tesseract(languages: languageMode.recognitionLanguage, dataSource: Bundle.main, engineMode: .lstmOnly)
         Async.userInitiated { [weak self] in
-            let tesseract = Tesseract(languages: languageMode.recognitionLanguage, dataSource: Bundle.main, engineMode: .lstmOnly)
             tesseract.performOCRPublisher(on: image)
                 .sink { [weak self] complete in
                 guard let self = self else { return }
@@ -106,12 +106,11 @@ extension OCRManager {
             } receiveValue: { [weak self] string in
                 Async.main { [weak self] in
                     guard let self = self else { return }
-                    let lines = string.components(separatedBy: .newlines).filter{!$0.isWhitespace}
-                    let text = lines.joined(separator: "\n").cleanUpMyanmarTexts()
+                    let lines = string.components(separatedBy: "\n").filter{!$0.isWhitespace}
+                    let text = lines.joined(separator: "\n")
                     self.onGetTexts?(text)
                 }
             }.cancel()
         }
     }
-    
 }

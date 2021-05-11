@@ -54,9 +54,7 @@ enum Vibration {
             let generator = UIImpactFeedbackGenerator(style: .rigid)
             generator.impactOccurred()
         }
-        
     }
-    
 }
 
 
@@ -68,8 +66,7 @@ final class SoundManager {
         }
 
     }
-    
-    
+
     class func vibrate(vibration: Vibration) {
         vibration.vibrate()
     }

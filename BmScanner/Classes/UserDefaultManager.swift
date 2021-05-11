@@ -22,6 +22,7 @@ final class UserDefaultManager {
     let _languageMode = "languageMode"
     let _isAdaptiveFontSize = "_isAdaptiveFontSize"
     private let _currentFolderId = "_currentFolderId"
+    let _appColor = "appColor"
     
     
     var hasShownOnboarding: Bool {
@@ -69,7 +70,14 @@ final class UserDefaultManager {
             manager.setValue(newValue.rawValue, forKey: _appTintColor)
         }
     }
-    
+    var appColor: UIColor? {
+        get {
+            return manager.data(forKey: _appColor)?.color
+        }
+        set {
+            manager.setValue(newValue, forKey: _appColor)
+        }
+    }
     var lanaguageMode: LanguageMode {
         get {
             return LanguageMode(rawValue: manager.integer(forKey: _languageMode)) ?? .Mixed

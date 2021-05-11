@@ -27,7 +27,6 @@ struct ImageEditorView: View {
         .font(.system(size: CGFloat(UserDefaultManager.shared.appFontSize), design: UserDefaultManager.shared.appFontDesign.design))
         .accentColor(UserDefaultManager.shared.appTintColor.color)
         .onAppear(perform: onAppear)
-        
     }
     
     private func onAppear() {

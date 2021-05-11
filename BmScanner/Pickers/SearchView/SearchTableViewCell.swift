@@ -14,7 +14,7 @@ class SearchTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: .subtitle, reuseIdentifier: SearchTableViewCell.reuseIdentifier)
         textLabel?.numberOfLines = 3
-        textLabel?.font = UIFont.myanmarFont.withSize(16)
+        textLabel?.font = UIFont.myanmarFont
         detailTextLabel?.textColor = UIColor.tertiaryLabel
     }
     

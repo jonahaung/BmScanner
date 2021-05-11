@@ -17,13 +17,30 @@ extension UITextView {
         return nil 
     }
     
-    func getLineRangeAtPosition(_ point: CGPoint) -> UITextRange? {
+    func getSentenceRangeAtPosition(_ point: CGPoint) -> UITextRange? {
         if let textPosition = self.closestPosition(to: point) {
             return tokenizer.rangeEnclosingPosition(textPosition, with: .sentence, inDirection: .init(rawValue: 1))
         }
         return nil
     }
-    
+    func getLineRangeAtPosition(_ point: CGPoint) -> UITextRange? {
+        if let textPosition = self.closestPosition(to: point) {
+            return tokenizer.rangeEnclosingPosition(textPosition, with: .line, inDirection: .init(rawValue: 1))
+        }
+        return nil
+    }
+    func getCharacterRangeAtPosition(_ point: CGPoint) -> UITextRange? {
+        if let textPosition = self.closestPosition(to: point) {
+            return tokenizer.rangeEnclosingPosition(textPosition, with: .character, inDirection: .init(rawValue: 1))
+        }
+        return nil
+    }
+    func getParagraphRangeAtPosition(_ point: CGPoint) -> UITextRange? {
+        if let textPosition = self.closestPosition(to: point) {
+            return tokenizer.rangeEnclosingPosition(textPosition, with: .paragraph, inDirection: .init(rawValue: 1))
+        }
+        return nil
+    }
     func getWordAtPosition(_ point: CGPoint) -> String? {
         if let range = getWordRangeAtPosition(point) {
             return self.text(in: range)
@@ -46,8 +63,7 @@ extension UITextView {
         }
     }
     func ensureCaretToTheEnd() {
-        let end = endOfDocument
-        selectedTextRange = textRange(from: end, to: end)
+        selectedTextRange = textRange(from: endOfDocument, to: endOfDocument)
     }
 }
 

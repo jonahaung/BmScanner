@@ -9,8 +9,9 @@ import SwiftUI
 
 struct ImagePicker: UIViewControllerRepresentable {
     
-    var onPickImage: (UIImage) -> Void
     let sourceType: UIImagePickerController.SourceType
+    var onPickImage: (UIImage) -> Void
+
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)

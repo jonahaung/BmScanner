@@ -26,11 +26,11 @@ struct BmScannerApp: App {
                     OnboardingView(isFirstTime: true)
                 }
             }
-            .environment(\.managedObjectContext, persistenceController.container.viewContext)
             .font(.system(size: CGFloat(appFontSize), design: AppFontDesign(rawValue: appFontDesign)!.design))
             .accentColor(AppTintColor(rawValue: appTintColor)?.color)
             .listStyle(InsetGroupedListStyle())
             .navigationViewStyle(StackNavigationViewStyle())
+            .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
         .onChange(of: scenePhase, perform: handleScenePhase(_:))
     }

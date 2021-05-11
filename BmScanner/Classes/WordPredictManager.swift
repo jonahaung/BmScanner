@@ -5,14 +5,17 @@
 //  Created by Aung Ko Min on 7/11/20.
 //
 
-import Foundation
+import UIKit
 
 class WordPredictManager {
 
     
-    var markovModel: MarkovModel<String>?
+    private var markovModel: MarkovModel<String>?
+    static let shared = WordPredictManager()
     
-    var words = [String]()
+    private var words = [String]()
+    
+    private lazy var textChecker = UITextChecker()
     
 //    func train() {
 //        let path = Bundle.main.path(forResource: "word", ofType: "txt") // file path for file "data.txt"
@@ -31,20 +34,11 @@ class WordPredictManager {
     init() {
         
         let string = try! String(contentsOfFile: Bundle.main.path(forResource: "words2", ofType: "txt")!, encoding: .utf8)
-        for line in string.lines() {
-            let tabs = line.components(separatedBy: "\t")
-            if let word = tabs.last {
-                self.words.append(word.urlEncoded)
-//                let wordTags = pairs.components(separatedBy: "|")
-//                for x in wordTags {
-//                    let separate = x.components(separatedBy: "/")
-//                    if let t = separate.first, let l = separate.last {
-//                        wordsArray.append(t)
-//                    }
-//                }
-
-            }
+        for word in string.lines() {
+            self.words.append(word.trimmed.urlEncoded)
         }
+        
+        markovModel = MarkovModel(transitions: words)
     }
     
 //    func makeJson() {
@@ -80,7 +74,12 @@ class WordPredictManager {
 //        }
 //        print(jsonString)
 //    }
-//    
+//
+    
+    func trainPrediction(string: String) {
+        let array = string.words()
+        markovModel = MarkovModel(transitions: array)
+    }
     func pridict(text: String) -> String? {
         return markovModel?.chain.next(given: text)
     }
@@ -92,15 +91,28 @@ class WordPredictManager {
         return nil
     }
     
-    func completion(for text: String) -> String? {
-        let encoded = text.urlEncoded
-        let encodedLength = encoded.utf16.count
-        let predicate = NSPredicate(format: "SELF BEGINSWITH[cd] %@", encoded)
-        var array = (words as NSArray).filtered(using: predicate) as? [String]
-        array = array?.sorted{ $0.utf16.count < $1.utf16.count }
-        if let x = array?.first?.dropFirst(encodedLength) {
-            return String(x).urlDecoded
-        }
-        return nil
+    private var previous: String?
+    
+    func completion(myanmar word: String) -> [String] {
+        let predicate = NSPredicate(format: "SELF BEGINSWITH[cd] %@", word.urlEncoded)
+        var array = (words as NSArray).filtered(using: predicate) as! [String]
+        
+        array = array.sorted{ $0.utf16.count < $1.utf16.count }
+        
+       
+        return array.map{$0.urlDecoded}
+    }
+    
+    func completion(english word: String) -> [String] {
+        
+        let completions = textChecker.completions(forPartialWordRange: NSRange(0..<word.utf16.count), in: word, language: "en_US") ?? []
+        
+        let predicate = NSPredicate(format: "SELF BEGINSWITH[cd] %@", word)
+        
+        let array = (completions as NSArray).filtered(using: predicate) as! [String]
+        
+//        array = array.sorted{ $0.utf16.count < $1.utf16.count }
+        
+        return array
     }
 }

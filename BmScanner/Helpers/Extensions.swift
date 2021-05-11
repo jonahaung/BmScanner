@@ -12,19 +12,27 @@ extension NSMutableParagraphStyle {
     static var defaultStyle: NSMutableParagraphStyle {
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineBreakMode = .byWordWrapping
-        paragraphStyle.lineBreakStrategy = .hangulWordPriority
-        paragraphStyle.allowsDefaultTighteningForTruncation = true
         return paragraphStyle
     }
 }
 extension String {
     var noteAttributedText: NSAttributedString {
-        let font = self.language == "my" ? UIFont.myanmarNoto : UIFont.engFont
-        let attributes: [NSAttributedString.Key: Any] = [.font: font, .paragraphStyle: NSMutableParagraphStyle.defaultStyle, .foregroundColor: UIColor.label]
-        return NSAttributedString(string: self, attributes: attributes)
         
+        let font = self.language == "my" ? UIFont.myanmarNoto : UIFont.engFont
+      
+        let attributes: [NSAttributedString.Key: Any] = [.font: font, .paragraphStyle: NSMutableParagraphStyle.defaultStyle, .foregroundColor: UIColor.label]
+        
+        return NSAttributedString(string: self, attributes: attributes)
+    }
+    
+    func isCorrectEnglishWord() -> Bool {
+        let checker = UITextChecker()
+        let range = NSRange(location: 0, length: self.utf16.count)
+        let misspelledRange = checker.rangeOfMisspelledWord(in: self, range: range, startingAt: 0, wrap: false, language: "en")
+        return misspelledRange.location == NSNotFound
     }
 }
+
 extension CharacterSet {
     
     static let removingCharacters = CharacterSet(charactersIn: "|+*#%;:&^$@!~.,'`|_ၤ”“")
@@ -32,7 +40,7 @@ extension CharacterSet {
     static let myanmarAlphabets = CharacterSet(charactersIn: "ကခဂဃငစဆဇဈညတဒဍဓဎထဋဌနဏပဖဗဘမယရလ၀သဟဠအ").union(.whitespacesAndNewlines)
     static let myanmarCharacters2 = CharacterSet(charactersIn: "ါာိီုူေဲဳဴဵံ့း္်ျြွှ")
     static var englishAlphabets = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
-    static var lineEnding = CharacterSet(charactersIn: ".,?!;:။…\n\t")
+    static var lineEnding = CharacterSet(charactersIn: ".?!;:။…\t")
 }
 extension String {
     

@@ -39,27 +39,27 @@ extension Note {
         request.predicate = NSPredicate(format: "text CONTAINS[cd] %@", text)
         return request
     }
-    static func create(text: String, _ folder: Folder? = nil) -> Note {
-       
-        let attributedText = text.noteAttributedText
-        
-        let viewContext = PersistenceController.shared.container.viewContext
-        let note = Note(context: viewContext)
-        note.id = UUID()
-        note.attributedText = attributedText
-        note.text = attributedText.string
-        note.created = Date()
-        note.edited = Date()
-        folder?.edited = Date()
-        note.folder = folder ?? Folder.getCurrentFolder()
-        do {
-            try viewContext.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-        return note
-    }
+//    static func create(text: String, _ folder: Folder? = nil) -> Note {
+//       
+//        let attributedText = text.noteAttributedText
+//        
+//        let viewContext = PersistenceController.shared.container.viewContext
+//        let note = Note(context: viewContext)
+//        note.id = UUID()
+//        note.attributedText = attributedText
+//        note.text = attributedText.string
+//        note.created = Date()
+//        note.edited = Date()
+//        folder?.edited = Date()
+//        note.folder = folder ?? Folder.getCurrentFolder()
+//        do {
+//            try viewContext.save()
+//        } catch {
+//            let nsError = error as NSError
+//            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//        }
+//        return note
+//    }
     static func create(text: NSAttributedString, _ folder: Folder? = nil) -> Note {
     
         let viewContext = PersistenceController.shared.container.viewContext

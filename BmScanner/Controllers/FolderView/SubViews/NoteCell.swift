@@ -12,7 +12,7 @@ struct NoteCell: View {
     let note: Note
     
     var body: some View {
-        NavigationLink(destination: destination(note: note)) {
+        NavigationLink(destination: TextEditorView(note: note)) {
             VStack(alignment: .leading){
                 AttributedLabelView(attributedText: note.attributedText, numberOfLines: 4)
                 if let folderName = note.folder?.name, let date = note.created {
@@ -29,9 +29,5 @@ struct NoteCell: View {
             }
             .padding(.vertical, 7)
         }
-    }
-    
-    private func destination(note: Note) -> some View {
-        return TextEditorView(note: note)
     }
 }
