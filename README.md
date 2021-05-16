@@ -1,1 +1,1 @@
-# BmScanner Burmese OCR. Written in SwiftUI
+Burmese OCR. Written in SwiftUI
