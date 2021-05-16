@@ -279,7 +279,7 @@
 		4701D69E26491EF90053C58E /* TextEditorBar */ = {
 			isa = PBXGroup;
 			children = (
-				4701D69F26491F1A0053C58E /* TextEditorBar.swift */,
+				47399D222650528B003BB9FF /* TextEditorBar */,
 				479E516B26481131004160C7 /* SuggesstionsView.swift */,
 			);
 			path = TextEditorBar;
@@ -567,6 +567,14 @@
 				4701D6B72649838D0053C58E /* TextStylyingManager.swift */,
 			);
 			path = Managers;
+			sourceTree = "<group>";
+		};
+		47399D222650528B003BB9FF /* TextEditorBar */ = {
+			isa = PBXGroup;
+			children = (
+				4701D69F26491F1A0053C58E /* TextEditorBar.swift */,
+			);
+			path = TextEditorBar;
 			sourceTree = "<group>";
 		};
 		473F25312643687A0068B82F /* ScannerButton */ = {

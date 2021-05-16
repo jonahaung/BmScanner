@@ -12,17 +12,27 @@ final class TextEditorManger: NSObject, ObservableObject {
     
     enum ActionSheetType: Identifiable {
         var id: ActionSheetType { return self }
-        case ShareMenu, InfoSheet, EditMenuSheet, AlignmentSheet, FontWeightSheet, ColorPicker
+        case ShareMenu, InfoSheet, EditMenuSheet
     }
-
     enum FullScreenType: Identifiable {
         var id: FullScreenType { return self }
         case ShareAttributedText, ShareUrl, PDFViewer, FolderPicker, ShareAsImages, FontPicker
     }
+    enum BottomBarType {
+        case Traits, Alignment, Font
+    }
     
+    @Published var bottomBarType: BottomBarType? {
+        willSet {
+            SoundManager.vibrate(vibration: .soft)
+        }
+    }
     @Published var actionSheetType: ActionSheetType?
     @Published var sheetType: FullScreenType?
-    @Published var keyboardLanguage = String()
+    
+    private var keyboardLanguage = String()
+    var isMyanmar: Bool { return keyboardLanguage == "my" }
+    
     var styleColor: CGColor = UIColor.systemRed.cgColor {
         didSet {
             guard oldValue != styleColor else { return }
@@ -33,7 +43,6 @@ final class TextEditorManger: NSObject, ObservableObject {
     var tempSavedDocumentUrl: URL?
     
     let note: Note
-    
     var textView: AutoCompleteTextView
     let wordPredictor : WordPredictor
     let textStylingManager: TextStylyingManager
@@ -53,7 +62,6 @@ final class TextEditorManger: NSObject, ObservableObject {
         textView.layoutManager.allowsNonContiguousLayout = false
         wordPredictor = WordPredictor(textView: textView)
         textStylingManager = TextStylyingManager(textView: textView)
-        textView.textStylyingManager = textStylingManager
         super.init()
         WordPredictManager.shared.trainPrediction(string: note.text ?? "")
         textView.delegate = self
@@ -76,6 +84,7 @@ extension TextEditorManger {
         note.edited = Date()
         note.folder?.edited = Date()
         note.id = UUID()
+        PersistenceController.shared.save()
     }
 }
 
@@ -104,19 +113,12 @@ extension TextEditorManger: UITextViewDelegate {
 
     func textViewDidBeginEditing(_ textView: UITextView) {
         keyboardLanguage = textView.textInputMode?.primaryLanguage ?? "unknown"
-//        textView.scrollToCorrectPosition()
+        objectWillChange.send()
     }
-//    func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
-//        
-//        return textView.inputView == nil
-//    }
-//    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
-//        return textView.inputView != nil
-//    }
-//    func textViewDidEndEditing(_ textView: UITextView) {
-//        textView.inputView = UIView()
-//        objectWillChange.send()
-//    }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+        objectWillChange.send()
+    }
     
     func textViewDidChangeSelection(_ textView: UITextView) {
         objectWillChange.send()
@@ -131,7 +133,6 @@ extension TextEditorManger: UITextViewDelegate {
         let isReturnKeyPressed = text == "\n"
         var returnValue = true
         let isSpace = text == " "
-        
         if isReturnKeyPressed {
             returnValue = !wordPredictor.applyAutocomplete()
         }

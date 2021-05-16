@@ -100,7 +100,7 @@ extension TextEditorView {
                 ActivityView(activityItems: images)
             case .FontPicker:
                 FontPickerController { font in
-                    manager.wrappedValue.textStylingManager.updateFont(newFont: font)
+                    manager.wrappedValue.textStylingManager.updateFont(preferredFont: font)
                 }
             case .ShareUrl:
                 if let url = manager.wrappedValue.tempSavedDocumentUrl {
@@ -127,12 +127,6 @@ extension TextEditorView {
             return infoActionSheet()
         case .EditMenuSheet:
             return moreEditingActionSheet()
-        case .AlignmentSheet:
-            return alignmentActionSheet()
-        case .FontWeightSheet:
-            return textWeightActionSheet()
-        case .ColorPicker:
-            return colorPickerActionSheet()
         }
     }
     // Share
@@ -215,68 +209,7 @@ extension TextEditorView {
         )
     }
     
-    // Alignment
-    private func colorPickerActionSheet() -> ActionSheet {
-        return ActionSheet(
-            title: Text("Color Styles"),
-            buttons: [
-                .default(Text("Text Color"), action: {
-                    manager.wrappedValue.textStylingManager.updateTextColor(color: UIColor(cgColor: manager.wrappedValue.styleColor))
-                }),
-                .default(Text("Highlight"), action: {
-                    manager.wrappedValue.textStylingManager.toggleHighlight(color: UIColor(cgColor: manager.wrappedValue.styleColor))
-                }),
-                
-                .cancel()
-            ]
-        )
-    }
-    
-    // Alignment
-    private func alignmentActionSheet() -> ActionSheet {
-        return ActionSheet(
-            title: Text("Text Alignment"),
-            buttons: [
-                .default(Text("Left"), action: {
-                    manager.wrappedValue.textStylingManager.updateAlignment(alignment: .left)
-                }),
-                .default(Text("Right"), action: {
-                    manager.wrappedValue.textStylingManager.updateAlignment(alignment: .right)
-                }),
-                .default(Text("Center"), action: {
-                    manager.wrappedValue.textStylingManager.updateAlignment(alignment: .center)
-                }),
-                .default(Text("Justify"), action: {
-                    manager.wrappedValue.textStylingManager.updateAlignment(alignment: .justified)
-                }),
-                .cancel()
-            ]
-        )
-    }
-    
-    // Text Weight
-    private func textWeightActionSheet() -> ActionSheet {
-        return ActionSheet(
-            title: Text("Font Weights"),
-            buttons: [
-                .default(Text("Toggle Bold"), action: {
-                    manager.wrappedValue.textView.toggleBoldface(nil)
-                }),
-                .default(Text("Toggle Italic"), action: {
-                    manager.wrappedValue.textView.toggleItalics(nil)
-                }),
-                .default(Text("Toggle Underline"), action: {
-                    manager.wrappedValue.textView.toggleUnderline(nil)
-                }),
-                .default(Text("Toggle Strikethrough"), action: {
-                    manager.wrappedValue.textStylingManager.toggleStrikeThrough()
-                }),
-                
-                .cancel()
-            ]
-        )
-    }
-    
+  
     // More
     private func moreEditingActionSheet() -> ActionSheet {
         var buttons = [Alert.Button]()
@@ -295,9 +228,11 @@ extension TextEditorView {
         buttons.append(.default(Text("Select All Texts"), action: {
             manager.wrappedValue.textView.selectAll(nil)
         }))
-        buttons.append(.default(Text("Cleanup Myanmar Texts"), action: {
-            manager.wrappedValue.textStylingManager.cleanUpTexts()
-        }))
+        if manager.wrappedValue.isMyanmar {
+            buttons.append(.default(Text("Cleanup Myanmar Texts"), action: {
+                manager.wrappedValue.textStylingManager.cleanUpTexts()
+            }))
+        }
         buttons.append(.destructive(Text("Reset All Attributes"), action: {
             manager.wrappedValue.textView.attributedText = manager.wrappedValue.textView.attributedText.string.noteAttributedText
         }))

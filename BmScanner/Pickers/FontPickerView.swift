@@ -57,7 +57,7 @@ extension FontPickerView {
             guard let descriptor = viewController.selectedFontDescriptor else { return }
             
             let font = UIFont(descriptor: descriptor, size: 36)
-            print(font.familyName, font.fontName)
+            
             parent.onPickFont(font)
             viewController.dismiss(animated: true)
         }

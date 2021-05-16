@@ -94,7 +94,7 @@ final class WordPredictor {
     }
     
     func predict(word: String) {
-        self.textView.suggestedText = self.wordPredictManager.pridict(text: word)
+        self.textView.nexSuggesstion = self.wordPredictManager.pridict(text: word)
     }
     
     func resetSuggesstions() {

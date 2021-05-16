@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-final class TextStylyingManager {
+
+class TextStylyingManager {
     
     private let textView: AutoCompleteTextView
     
@@ -21,19 +22,39 @@ final class TextStylyingManager {
         get { return textView.selectedTextRange }
         set { textView.selectedTextRange = newValue }
     }
+    
     private var selectedRange: NSRange {
         get { return textView.selectedRange }
         set { textView.selectedRange = newValue }
     }
+    
     private var attributedText: NSAttributedString {
         get { return textView.attributedText }
         set { textView.attributedText = newValue }
     }
+    
     private var textStorage: NSTextStorage {
         return textView.textStorage
     }
+    
     private var undoManager: UndoManager? {
         return textView.undoManager
+    }
+    
+    // Dynamics
+    var fontName: String {
+        guard textView.selectedRange.length > 0 else { return "Change"}
+        if let x = textView.textStorage.attribute(.font, at: textView.selectedRange.location, effectiveRange: nil) as? UIFont {
+            return x.fontName
+        }
+        return "Font Name"
+    }
+    var textColor: UIColor {
+        guard textView.selectedRange.length > 0 else { return .label}
+        if let x = textView.textStorage.attribute(.foregroundColor, at: textView.selectedRange.location, effectiveRange: nil) as? UIColor {
+            return x
+        }
+        return .label
     }
     
     // Cleanup Text
@@ -61,6 +82,7 @@ final class TextStylyingManager {
         let newSentence = newLines.joined(separator: "။ ")
         textView.text = newSentence
     }
+    
     // Append Texts
     func appendTexts(appendingTexts: NSAttributedString) {
         let oldTexts = attributedText.mutable
@@ -74,13 +96,11 @@ final class TextStylyingManager {
     
     // Joined Selected Texts
     func joinSelectedTexts() {
-        let oldAttributedTexts = attributedText
-        let appropriteRange = getAppropriteRange()
-        let string = textStorage.attributedSubstring(from: appropriteRange).string.lines().joined(separator: " ")
-        textStorage.replaceCharacters(in: appropriteRange, with: string)
+        let oldText = textStorage.attributedSubstring(from: selectedRange)
+        let newText = oldText.string.lines().joined(separator: " ")
+        textStorage.replaceCharacters(in: selectedRange, with: newText)
         undoManager?.registerUndo(withTarget: self, handler: {
-            $0.selectedRange = appropriteRange
-            $0.attributedText = oldAttributedTexts
+            $0.textStorage.replaceCharacters(in: $0.selectedRange, with: oldText)
         })
     }
     
@@ -91,11 +111,13 @@ final class TextStylyingManager {
             if let oldFont = value as? UIFont {
                 let oldFontDescriptor = oldFont.fontDescriptor
                 let oldTraits = oldFontDescriptor.symbolicTraits
-                
-                if let newDescriptor = UIFontDescriptor(name: oldFont.fontName, size: oldFontDescriptor.pointSize + diff).withSymbolicTraits(oldTraits) {
-                    let new = UIFont(descriptor: newDescriptor, size: oldFont.pointSize + diff)
-                    textStorage.addAttribute(.font, value: new, range: range)
+                var newFont: UIFont
+                if let fontDescriptorWithSymbolicTraits = UIFontDescriptor(name: oldFont.fontName, size: oldFontDescriptor.pointSize + diff).withSymbolicTraits(oldTraits) {
+                    newFont = UIFont(descriptor: fontDescriptorWithSymbolicTraits, size: oldFontDescriptor.pointSize + diff)
+                } else {
+                    newFont = UIFont(descriptor: oldFontDescriptor, size: oldFontDescriptor.pointSize + diff)
                 }
+                textStorage.addAttribute(.font, value: newFont, range: range)
             }
         }
         
@@ -107,60 +129,63 @@ final class TextStylyingManager {
     }
     
     // Font
-    func updateFont(newFont: UIFont) {
+    func updateFont(preferredFont: UIFont) {
         let appropriteRange = getAppropriteRange()
-        textStorage.enumerateAttribute(.font, in: appropriteRange, options: .longestEffectiveRangeNotRequired) { (value, range, _) in
-            if let oldFont = value as? UIFont {
-                let oldFontDescriptor = oldFont.fontDescriptor
-                let oldTraits = oldFontDescriptor.symbolicTraits
-                
-                if let newDescriptor = UIFontDescriptor(name: newFont.fontName, size: oldFontDescriptor.pointSize).withSymbolicTraits(oldTraits) {
-                    let new = UIFont(descriptor: newDescriptor, size: oldFont.pointSize)
-                    textStorage.addAttribute(.font, value: new, range: range)
-                }
-                undoManager?.registerUndo(withTarget: self, handler: {
-                    $0.selectedRange = appropriteRange
-                    $0.updateFont(newFont: oldFont)
-                })
-            }
+        guard let oldFont = textStorage.attribute(.font, at: appropriteRange.location, effectiveRange: nil) as? UIFont else {
+            Log("No Font")
+            return
         }
+        
+        let oldFontDescriptor = oldFont.fontDescriptor
+        let oldTraits = oldFontDescriptor.symbolicTraits
+        
+        var newFont: UIFont
+        if let fontDescriptorWithSymbolicTraits = UIFontDescriptor(name: preferredFont.fontName, size: oldFontDescriptor.pointSize).withSymbolicTraits(oldTraits) {
+            newFont = UIFont(descriptor: fontDescriptorWithSymbolicTraits, size: 0)
+        } else {
+            newFont = UIFont(descriptor: oldFontDescriptor, size: 0)
+        }
+        textStorage.addAttribute(.font, value: newFont, range: appropriteRange)
+        undoManager?.registerUndo(withTarget: self, handler: {
+            $0.selectedRange = appropriteRange
+            $0.updateFont(preferredFont: oldFont)
+        })
         selectedRange = appropriteRange
     }
-    // TextColor Color
-    func updateTextColor(color: UIColor) {
-        let appropriteRange = getAppropriteRange()
-        
-        let oldColor = textStorage.getAttribute(for: .foregroundColor, at: appropriteRange)  as? UIColor ?? UIColor.label
-        
-        textStorage.addAttribute(.foregroundColor, value: color, range: appropriteRange)
-        
-        undoManager?.registerUndo(withTarget: self, handler: { target in
-            target.selectedRange = appropriteRange
-            target.updateTextColor(color: oldColor)
-        })
-    }
+
+//    // Symbolic Traits
+//    func updateSymbolicTraits(newTrait: UIFontDescriptor.SymbolicTraits) {
+//        let appropriteRange = getAppropriteRange()
+//        textStorage.enumerateAttribute(.font, in: appropriteRange, options: .longestEffectiveRangeNotRequired) { (value, range, pointer) in
+//            if let font = value as? UIFont {
+//                let fontDescriptor = font.fontDescriptor
+//                var symbolicTraits = fontDescriptor.symbolicTraits
+//                symbolicTraits.formSymmetricDifference(newTrait)
+//
+//                var newFont: UIFont
+//
+//                if let newFontDescriptor = fontDescriptor.withSymbolicTraits(symbolicTraits) {
+//                    newFont = UIFont(descriptor: newFontDescriptor, size: fontDescriptor.pointSize)
+//                } else {
+//                    newFont = UIFont(descriptor: fontDescriptor, size: 0)
+//                }
+//                textStorage.addAttribute(.font, value: newFont, range: range)
+//            }
+//        }
+//        undoManager?.registerUndo(withTarget: self, handler: { target in
+//            target.selectedRange = appropriteRange
+//            target.updateSymbolicTraits(newTrait: newTrait)
+//        })
+//    }
     
-    // Symbolic Traits
-    func updateSymbolicTraits(newTrait: UIFontDescriptor.SymbolicTraits) {
-        let appropriteRange = getAppropriteRange()
-        textStorage.enumerateAttribute(.font, in: appropriteRange, options: .longestEffectiveRangeNotRequired) { (value, range, pointer) in
-            if let font = value as? UIFont {
-                let fontDescriptor = font.fontDescriptor
-                var symbolicTraits = fontDescriptor.symbolicTraits
-                symbolicTraits.formSymmetricDifference(newTrait)
-                if let newFontDescriptor = fontDescriptor.withSymbolicTraits(symbolicTraits) {
-                    let newFont = UIFont(descriptor: newFontDescriptor, size: fontDescriptor.pointSize)
-                    textStorage.addAttribute(.font, value: newFont, range: range)
-                }
-            }
+    func selectParagraph() -> NSRange {
+        if selectedRange.length == 0 {
+            selectedRange = NSRange(location: 0, length: attributedText.length)
+            return selectedRange
         }
-        undoManager?.registerUndo(withTarget: self, handler: { target in
-            target.selectedRange = appropriteRange
-            target.updateSymbolicTraits(newTrait: newTrait)
-        })
-    }
-    
-    private func selectParagraph() -> NSRange {
+        if selectedRange == NSRange(location: 0, length: attributedText.length) {
+            return selectedRange
+        }
         guard let selectedTextRange = self.selectedTextRange else { return selectedRange}
         guard let paragraphRange = textView.tokenizer.rangeEnclosingPosition(selectedTextRange.start, with: .paragraph, inDirection: .init(rawValue: 0)) else { return selectedRange }
         self.selectedTextRange = paragraphRange
@@ -169,7 +194,7 @@ final class TextStylyingManager {
     
     // Alignment
     func updateAlignment(alignment: NSTextAlignment) {
-        let paragraphRange = getAppropriteRange()
+        let paragraphRange = selectParagraph()
         let paragraphStyle = textStorage.paragraphStyple(at: paragraphRange)
         let oldAlignment = paragraphStyle?.alignment ?? NSTextAlignment.natural
         
@@ -182,15 +207,25 @@ final class TextStylyingManager {
             target.updateAlignment(alignment: oldAlignment)
         })
         selectedRange = paragraphRange
+        textView.delegate?.textViewDidChange?(textView)
+    }
+    
+    // TextColor Color
+    func updateTextColor(color: UIColor) {
+        let appropriteRange = getAppropriteRange()
+        let oldColor = textStorage.getAttribute(for: .foregroundColor, at: appropriteRange)  as? UIColor ?? UIColor.label
+        textStorage.addAttribute(.foregroundColor, value: color, range: appropriteRange)
+        undoManager?.registerUndo(withTarget: self, handler: { target in
+            target.selectedRange = appropriteRange
+            target.updateTextColor(color: oldColor)
+        })
+        textView.delegate?.textViewDidChange?(textView)
     }
     
     var foregroundColorAtSelectedRange: UIColor {
         return textStorage.foregroundColor(at: selectedRange)
     }
     
-    func toggleUnderline() {
-        toggleAttribute(attributs: [.underlineStyle: NSUnderlineStyle.single.rawValue, .underlineColor: foregroundColorAtSelectedRange])
-    }
     func toggleStrikeThrough() {
         toggleAttribute(attributs: [.strikethroughStyle: NSUnderlineStyle.single.rawValue, .strikethroughColor: foregroundColorAtSelectedRange])
     }
@@ -198,7 +233,7 @@ final class TextStylyingManager {
         toggleAttribute(attributs: [.backgroundColor: color.withAlphaComponent(0.6)])
     }
     
-    func toggleAttribute(attributs: [NSAttributedString.Key: Any]) {
+    private func toggleAttribute(attributs: [NSAttributedString.Key: Any]) {
         let appropriteRange = getAppropriteRange()
         
         attributs.forEach{

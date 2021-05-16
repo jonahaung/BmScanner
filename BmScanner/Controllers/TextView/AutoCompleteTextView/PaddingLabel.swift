@@ -20,7 +20,7 @@ class PaddingLabel: UIView {
         
         }
     }
-    let inset = UIEdgeInsets(top: 3, left: 9, bottom: 3, right: 9)
+    private let inset = UIEdgeInsets(top: 4, left: 11, bottom: 4, right: 11)
     
     private let label: UILabel = {
         $0.font = UIFont(name:"MyanmarSansPro", size: 13)
@@ -30,10 +30,8 @@ class PaddingLabel: UIView {
     }(UILabel())
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = UIColor(white: 0.5, alpha: 0.9)
+        backgroundColor = .black
         addSubview(label)
-        
-        layer.cornerRadius = 7
     }
     
     
@@ -42,9 +40,11 @@ class PaddingLabel: UIView {
     }
 
     override func layoutSubviews() {
+        
         label.frame = bounds.inset(by: inset)
         let labelSize = label.intrinsicContentSize
         frame.size = CGSize(width: labelSize.width + inset.left + inset.right, height: labelSize.height + inset.top + inset.bottom)
+        layer.cornerRadius = frame.size.height/2
         isHidden = text == nil
     }
 }

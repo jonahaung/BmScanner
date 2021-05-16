@@ -18,8 +18,12 @@ final class AutoCompleteTextView: UITextView {
         }
     }
     
-    
-    weak var textStylyingManager: TextStylyingManager?
+    var nexSuggesstion: String? {
+        didSet {
+            guard oldValue != nexSuggesstion else { return }
+            setNeedsDisplay()
+        }
+    }
     
     // Init
     
@@ -27,7 +31,7 @@ final class AutoCompleteTextView: UITextView {
         super.init(frame: frame, textContainer: textContainer)
         allowsEditingTextAttributes = true
         spellCheckingType = .yes
-        autocorrectionType = .yes
+        autocorrectionType = .no
         isEditable = false
         isSelectable = true
         showsVerticalScrollIndicator = false
@@ -46,14 +50,6 @@ final class AutoCompleteTextView: UITextView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
-    var suggestedText: String? {
-        didSet {
-            guard oldValue != suggestedText else { return }
-            setNeedsDisplay()
-        }
-    }
-    
     private var suggestedTextAttributes: [NSAttributedString.Key: Any] {
         var x = typingAttributes
         x.updateValue(UIColor.tertiaryLabel, forKey: .foregroundColor)
@@ -63,7 +59,7 @@ final class AutoCompleteTextView: UITextView {
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         
-        if let suggestedText = self.suggestedText {
+        if let suggestedText = self.nexSuggesstion {
             let caretRect = self.caretRect(for: self.endOfDocument)
             let attr = suggestedTextAttributes
             
@@ -77,11 +73,17 @@ final class AutoCompleteTextView: UITextView {
         }
     }
     
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        setNeedsDisplay()
+    }
+    
     @objc private func swipeRight(_ gesture: UISwipeGestureRecognizer) {
         guard isEditable else { return }
-        if let suggestion = suggestedText {
-            suggestedText = nil
-            insertText(" "+suggestion)
+        if let suggestion = nexSuggesstion {
+            nexSuggesstion = nil
+            insertText(suggestion)
         }
     }
     
@@ -96,8 +98,10 @@ extension AutoCompleteTextView {
             resignFirstResponder()
             inputView = UIView()
         }else {
-            if selectedRange.length == 0 {
+            if selectedRange.location == 0 {
                 ensureCaretToTheEnd()
+            } else {
+                selectedRange.length = 0
             }
             inputView = nil
             becomeFirstResponder()
@@ -109,29 +113,34 @@ extension AutoCompleteTextView {
 
 extension AutoCompleteTextView: UIGestureRecognizerDelegate {
     
+    private var isSelectedAll: Bool { return selectedRange.length == attributedText.length }
+    
+    
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if isEditable {
             switch action {
-            case
-                #selector(delete(_:)),
-                #selector(makeTextWritingDirectionRightToLeft(_:)),
-                #selector(makeTextWritingDirectionLeftToRight(_:)):
-                return true
+            case #selector(paste(_:)):
+                return UIPasteboard.general.string != nil
+            case Selector(("_showTextStyleOptions:")):
+                return false
+            case #selector(delete(_:)):
+                return super.canPerformAction(action, withSender: sender) && selectedRange.length > 0
             default:
                 return super.canPerformAction(action, withSender: sender)
             }
         }else {
-            
             switch action {
+            case #selector(selectAll(_:)):
+                return !isSelectedAll
+            case #selector(delete(_:)):
+                return !isSelectedAll
+            case #selector(copy(_:)):
+                return isSelectedAll
             case
-                #selector(delete(_:)),
-                #selector(selectAll(_:)),
-                Selector(("_showTextStyleOptions:")),
-                #selector(makeTextWritingDirectionRightToLeft(_:)),
-                #selector(makeTextWritingDirectionLeftToRight(_:)),
                 #selector(toggleBoldface(_:)),
                 #selector(toggleUnderline(_:)),
-                #selector(toggleItalics(_:)):
+                #selector(toggleItalics(_:)),
+                Selector(("_showTextStyleOptions:")):
                 return true
             default:
                 return false
@@ -140,15 +149,16 @@ extension AutoCompleteTextView: UIGestureRecognizerDelegate {
     }
     
     override func delete(_ sender: Any?) {
-        textStorage.deleteCharacters(in: selectedRange)
+        let selecttedText = textStorage.attributedSubstring(from: selectedRange)
+        let range = selectedRange
+        textStorage.deleteCharacters(in: range)
+        undoManager?.registerUndo(withTarget: self, handler: { target in
+            target.selectedRange = range
+            target.textStorage.insert(selecttedText, at: range.location)
+            target.selectedRange = range
+        })
         selectedRange.length = 0
-    }
-    
-    override func makeTextWritingDirectionLeftToRight(_ sender: Any?) {
-        textStylyingManager?.updateAlignment(alignment: .right)
-    }
-    override func makeTextWritingDirectionRightToLeft(_ sender: Any?) {
-        textStylyingManager?.updateAlignment(alignment: .left)
+        delegate?.textViewDidChange?(self)
     }
 }
 

@@ -13,14 +13,7 @@ struct SuggesstionsView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(alignment: .center, spacing: 3) {
-                if manager.wrappedValue.textView.selectedRange.length > 0 {
-                    Button {
-                        manager.wrappedValue.textStylingManager.toggleHighlight(color: .systemYellow)
-                    } label: {
-                        Image(systemName: "highlighter")
-                    }
-                }
-                
+    
                 Section {
                     ForEach(manager.wrappedValue.wordPredictor.suggesstions, id: \.self) { item in
                         Button {
@@ -38,7 +31,7 @@ struct SuggesstionsView: View {
             }
             .font(Font.custom("MyanmarSansPro", fixedSize: 14))
         }
-        .frame(maxHeight: 35)
+        .frame(maxHeight: manager.wrappedValue.wordPredictor.suggesstions.isEmpty ? 0 : 35)
         .padding(.leading, 10)
     }
 }
